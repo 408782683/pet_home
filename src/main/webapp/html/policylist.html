@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我的保单 - 伴侣宠物之家</title>
+
+    <!-- 引入 Element UI 样式 -->
+    <link rel="stylesheet" href="/css/index.css">
+
+    <!-- 引入 Vue 和 Element UI JS -->
+    <script src="/js/vue.min.js"></script>
+    <script src="/js/index.js"></script>
+    <!--引入检查登录状态-->
+    <script src="/js/check.js"></script>
+
+    <link rel="stylesheet" href="/css/plicylist.css">
+</head>
+<body>
+<div id="app">
+    <!-- 顶部导航栏 -->
+    <div class="top-navbar">
+        <div class="navbar-content">
+            <div class="logo">
+                <span class="pet-icon">🐾</span>
+                <span class="logo-text">{{ systemName }}</span>
+            </div>
+
+            <div class="nav-menu">
+                <div class="nav-item" @click="goTo('/html/userhome.html')">
+                    <i class="el-icon-s-home"></i>
+                    <span>首页</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/productlist.html')">
+                    <i class="el-icon-shopping-bag-2"></i>
+                    <span>商品一览</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/insurancelist.html')">
+                    <i class="el-icon-s-home"></i>
+                    <span>宠物保险</span>
+                </div>
+                <div class="nav-item active" @click="goTo('/html/policylist.html')">
+                    <i class="el-icon-document-checked"></i>
+                    <span>我的保单</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/claimlist.html')">
+                    <i class="el-icon-warning-outline"></i>
+                    <span>申保记录</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/hospitallist.html')">
+                    <i class="el-icon-office-building"></i>
+                    <span>宠物医院</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/appointmentlist.html')">
+                    <i class="el-icon-s-order"></i>
+                    <span>预约记录</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/breedinglist.html')">
+                    <i class="el-icon-search"></i>
+                    <span>寻找配种</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/fosterlist.html')">
+                    <i class="el-icon-house"></i>
+                    <span>宠物寄养</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/adoptionlist.html')">
+                    <i class="el-icon-present"></i>
+                    <span>宠物领养</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/forumlist.html')">
+                    <i class="el-icon-chat-dot-square"></i>
+                    <span>论坛</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/usercart.html')">
+                    <i class="el-icon-shopping-cart-2"></i>
+                    <span>购物车</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/orderlist.html')">
+                    <i class="el-icon-s-order"></i>
+                    <span>我的订单</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/reviewlist.html')">
+                    <i class="el-icon-chat-line-square"></i>
+                    <span>我的评价</span>
+                </div>
+            </div>
+
+            <div class="user-info" v-if="userInfo" @click="toggleDropdown">
+                <img :src="userInfo.avatar || defaultAvatar" class="user-avatar" />
+                <span class="username">{{ userInfo.nickname }}</span>
+                <i class="el-icon-arrow-down"></i>
+
+                <div class="user-dropdown" :class="{ show: dropdownVisible }">
+                    <div class="dropdown-item" @click.stop="goToProfile">个人资料</div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item" @click.stop="logout">退出登录</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 保单列表内容 -->
+    <div class="policy-list-container">
+        <div class="page-header">
+            <h2>我的保单</h2>
+            <p>查看您购买的所有保险产品</p>
+        </div>
+
+        <!-- 保单网格 -->
+        <div class="policy-grid">
+            <div v-for="policy in policyList" :key="policy.id" class="policy-card">
+                <div class="policy-header">
+                    <div class="insurance-icon">
+                        <i class="el-icon-s-home"></i>
+                    </div>
+                    <el-tag :type="policy.status === '生效中' ? 'success' : 'info'" size="medium">
+                        {{ policy.status }}
+                    </el-tag>
+                </div>
+                <div class="policy-body">
+                    <div class="insurance-name" :title="policy.insuranceName">{{ policy.insuranceName }}</div>
+                    <div class="policy-info-row">
+                        <span class="label">订单编号：</span>
+                        <span class="value">{{ policy.orderNo }}</span>
+                    </div>
+                    <div class="policy-info-row">
+                        <span class="label">宠物信息：</span>
+                        <span class="value">{{ policy.petName }} / {{ policy.petType }} / {{ policy.petAge }}岁</span>
+                    </div>
+                    <div class="policy-info-row">
+                        <span class="label">保险期限：</span>
+                        <span class="value">{{ formatDate(policy.startDate) }} 至 {{ formatDate(policy.endDate) }}</span>
+                    </div>
+                    <div class="policy-price">
+                        <span class="price-symbol">¥</span>
+                        <span class="price-value">{{ policy.price }}</span>
+                        <span class="price-unit">/年</span>
+                    </div>
+                </div>
+                <div class="policy-footer">
+                    <el-button
+                            type="primary"
+                            size="small"
+                            icon="el-icon-document-add"
+                            :disabled="policy.status !== '生效中'"
+                            @click="showClaimDialog(policy)">
+                        申请理赔
+                    </el-button>
+                </div>
+            </div>
+
+            <!-- 空状态 -->
+            <el-empty v-if="policyList.length === 0" description="暂无保单"></el-empty>
+        </div>
+
+        <!-- 分页 -->
+        <div class="pagination-section" v-if="total > 0">
+            <el-pagination
+                    background
+                    @current-change="handlePageChange"
+                    :current-page="currentPage"
+                    :page-size="pageSize"
+                    layout="total, prev, pager, next, jumper"
+                    :total="total">
+            </el-pagination>
+        </div>
+    </div>
+
+    <!-- 理赔申请弹窗 -->
+    <el-dialog
+            title="申请理赔"
+            :visible.sync="claimDialogVisible"
+            width="700px"
+            :close-on-click-modal="false"
+            @close="resetClaimForm">
+        <div class="claim-dialog-content" v-if="selectedPolicy">
+            <div class="policy-summary">
+                <div class="summary-item">
+                    <span class="summary-label">保险名称：</span>
+                    <span class="summary-value">{{ selectedPolicy.insuranceName }}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">宠物信息：</span>
+                    <span class="summary-value">{{ selectedPolicy.petName }} / {{ selectedPolicy.petType }}</span>
+                </div>
+            </div>
+
+            <el-form :model="claimForm" :rules="claimRules" ref="claimForm" label-width="100px">
+                <el-form-item label="申请原因" prop="reason">
+                    <el-input v-model="claimForm.reason" placeholder="请输入申请原因" maxlength="100" show-word-limit></el-input>
+                </el-form-item>
+                <el-form-item label="情况描述" prop="description">
+                    <el-input
+                            type="textarea"
+                            v-model="claimForm.description"
+                            placeholder="请详细描述事情经过和当前情况"
+                            :rows="5"
+                            maxlength="500"
+                            show-word-limit>
+                    </el-input>
+                </el-form-item>
+                <el-form-item label="佐证图片" prop="evidenceImages">
+                    <el-upload
+                            action="/api/file/upload"
+                            list-type="picture-card"
+                            :on-success="handleImageSuccess"
+                            :on-remove="handleImageRemove"
+                            :before-upload="beforeImageUpload"
+                            :limit="5"
+                            :file-list="imageFileList"
+                            :headers="{ Authorization: 'Bearer ' + token }">
+                        <i class="el-icon-plus"></i>
+                        <div slot="tip" class="el-upload__tip">最多上传5张图片，单张图片不超过5MB</div>
+                    </el-upload>
+                </el-form-item>
+            </el-form>
+        </div>
+        <span slot="footer">
+        <el-button @click="claimDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitClaim">提交申请</el-button>
+      </span>
+    </el-dialog>
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                systemName: '伴侣宠物之家',
+                userInfo: JSON.parse(localStorage.getItem('userInfo')) || null,
+                token: localStorage.getItem('authToken') || '',
+                dropdownVisible: false,
+                defaultAvatar: 'https://img1.baidu.com/it/u=2531584226,2194794184&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500',
+
+                policyList: [],
+                currentPage: 1,
+                pageSize: 12,
+                total: 0,
+
+                // 理赔相关
+                claimDialogVisible: false,
+                selectedPolicy: null,
+                claimForm: {
+                    reason: '',
+                    description: '',
+                    evidenceImages: []
+                },
+                claimRules: {
+                    reason: [{ required: true, message: '请输入申请原因', trigger: 'blur' }],
+                    description: [{ required: true, message: '请输入情况描述', trigger: 'blur' }]
+                },
+                imageFileList: []
+            };
+        },
+        created() {
+            this.loadPolicyList();
+        },
+        methods: {
+            async loadPolicyList() {
+                if (!this.userInfo) {
+                    this.$notify.warning({ title: '提示', message: '请先登录', duration: 2000 });
+                    setTimeout(() => window.location.href = '/index.html', 1000);
+                    return;
+                }
+
+                const params = {
+                    userId: this.userInfo.id,
+                    page: this.currentPage,
+                    size: this.pageSize
+                };
+
+                try {
+                    const res = await fetch(`/api/insurance/orderListPage`, {
+                        method: 'POST',
+                        body: JSON.stringify(params),
+                        headers: {
+                            'Authorization': `Bearer ${this.token}` ,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        this.policyList = data.data.orderList || [];
+                        this.total = data.data.total || 0;
+                    } else {
+                        this.$message.error(data.message || '加载失败');
+                    }
+                } catch (err) {
+                    this.$message.error('网络错误，请稍后重试');
+                }
+            },
+
+            handlePageChange(page) {
+                this.currentPage = page;
+                this.loadPolicyList();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            },
+
+            formatDate(date) {
+                if (!date) return '';
+                const d = new Date(date);
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            },
+
+            showClaimDialog(policy) {
+                this.selectedPolicy = policy;
+                this.resetClaimForm();
+                this.claimDialogVisible = true;
+            },
+
+            resetClaimForm() {
+                this.claimForm = { reason: '', description: '', evidenceImages: [] };
+                this.imageFileList = [];
+                if (this.$refs.claimForm) {
+                    this.$refs.claimForm.clearValidate();
+                }
+            },
+
+            handleImageSuccess(response, file, fileList) {
+                if (response.success) {
+                    this.claimForm.evidenceImages.push(response.data);
+                } else {
+                    this.$message.error('图片上传失败');
+                    // 移除失败的文件
+                    const index = fileList.findIndex(item => item.uid === file.uid);
+                    if (index !== -1) fileList.splice(index, 1);
+                }
+            },
+
+            handleImageRemove(file, fileList) {
+                if (file.response && file.response.success) {
+                    const url = file.response.data;
+                    const index = this.claimForm.evidenceImages.indexOf(url);
+                    if (index !== -1) {
+                        this.claimForm.evidenceImages.splice(index, 1);
+                    }
+                }
+            },
+
+            beforeImageUpload(file) {
+                const isImage = file.type.startsWith('image/');
+                const isLt5M = file.size / 1024 / 1024 < 5;
+                if (!isImage) {
+                    this.$message.warning('只能上传图片文件');
+                    return false;
+                }
+                if (!isLt5M) {
+                    this.$message.warning('图片大小不能超过5MB');
+                    return false;
+                }
+                return true;
+            },
+
+            submitClaim() {
+                this.$refs.claimForm.validate(async (valid) => {
+                    if (!valid) return;
+
+                    const payload = {
+                        userId: this.userInfo.id,
+                        orderId: this.selectedPolicy.id,
+                        reason: this.claimForm.reason,
+                        description: this.claimForm.description,
+                        evidenceImages: this.claimForm.evidenceImages.join(',')
+                    };
+
+                    try {
+                        const res = await fetch('/api/insurance/claim/submit', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${this.token}`
+                            },
+                            body: JSON.stringify(payload)
+                        });
+                        const result = await res.json();
+                        if (result.success) {
+                            this.$message.success('理赔申请已提交');
+                            this.claimDialogVisible = false;
+                        } else {
+                            this.$message.error(result.message || '提交失败');
+                        }
+                    } catch (err) {
+                        this.$message.error('提交失败，请稍后重试');
+                    }
+                });
+            },
+
+            goTo(path) {
+                window.location.href = path;
+            },
+            goToProfile() {
+                window.location.href = '/html/user-profile.html';
+            },
+            logout() {
+                localStorage.removeItem('userInfo');
+                localStorage.removeItem("authToken");
+                this.userInfo = null;
+                window.location.href = '/index.html';
+            },
+            toggleDropdown() {
+                this.dropdownVisible = !this.dropdownVisible;
+            }
+        }
+    });
+</script>
+</body>
+</html>

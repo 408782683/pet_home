@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>加入伴侣宠物之家</title>
+    <link rel="stylesheet" href="/css/register.css">
+
+</head>
+<body>
+<div class="register-container">
+    <div class="register-background">
+        <!-- 爪印动画 (简化版，可选) -->
+    </div>
+    <div class="register-box">
+        <div class="register-header">
+            <h2>加入伴侣宠物之家</h2>
+            <p class="subtitle">注册成为普通用户，开启爱宠之旅</p>
+        </div>
+        <form id="registerForm" class="register-form">
+            <div class="form-item">
+                <input type="text" id="username" name="username" placeholder="请输入用户名（4-20位）" required>
+                <div id="usernameTip" class="tip"></div>
+            </div>
+            <div class="form-item">
+                <input type="password" id="password" name="password" placeholder="请输入密码（6-20位）" required>
+            </div>
+            <div class="form-item">
+                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="请再次输入密码" required>
+            </div>
+            <div class="form-item">
+                <input type="text" id="nickname" name="nickname" placeholder="请输入昵称" required>
+            </div>
+            <div class="form-item">
+                <input type="tel" id="phone" name="phone" placeholder="请输入手机号">
+            </div>
+            <div class="form-item">
+                <input type="email" id="email" name="email" placeholder="请输入邮箱">
+            </div>
+            <div class="form-item captcha-container">
+                <input type="text" id="captcha" name="captcha" placeholder="请输入验证码" maxlength="4" required style="width: 60%;">
+                <div class="captcha-image" id="captchaImage">
+                    <img id="captchaImg" src="" alt="验证码">
+                    <div class="refresh-hint">点击刷新</div>
+                </div>
+            </div>
+            <button type="submit" id="registerBtn" class="register-button">注 册</button>
+            <div class="login-link">
+                已有账号？ <a href="http://localhost:18001/index.html">立即登录</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // 全局状态
+    let usernameChecked = false;
+    let usernameExists = false;
+
+    // DOM 元素
+    const form = document.getElementById('registerForm');
+    const usernameInput = document.getElementById('username');
+    const captchaImg = document.getElementById('captchaImg');
+    const registerBtn = document.getElementById('registerBtn');
+
+    // 刷新验证码
+    function refreshCaptcha() {
+        captchaImg.src = `http://localhost:18001/api/captcha/generate?t=${Date.now()}`;
+    }
+
+    // 检查用户名可用性
+    async function checkUsernameAvailable() {
+        const username = usernameInput.value;
+        if (username && username.length >= 4) {
+            try {
+                //改成POST请求
+                const response = await fetch(`http://localhost:18001/api/user/isUsernameExists`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username })
+                });
+                const data = await response.json();
+                usernameChecked = true;
+                usernameExists = data.data.exists;
+                updateUsernameTip();
+            } catch (error) {
+                console.error('检查用户名错误:', error);
+            }
+        } else {
+            usernameChecked = false;
+            usernameExists = false;
+            updateUsernameTip();
+        }
+    }
+
+    function updateUsernameTip() {
+        const tipEl = document.getElementById('usernameTip');
+        tipEl.className = 'tip';
+        if (usernameChecked) {
+            tipEl.textContent = usernameExists ? '用户名已存在' : '用户名可用';
+            tipEl.classList.add(usernameExists ? 'error-tip' : 'success-tip');
+        } else {
+            tipEl.textContent = '';
+        }
+    }
+
+    // 表单提交处理
+    async function handleRegister(event) {
+        event.preventDefault();
+
+        if (usernameExists) {
+            alert('用户名已存在，请更换');
+            return;
+        }
+
+        const formData = new FormData(form);
+        const registerData = {
+            username: formData.get('username'),
+            password: formData.get('password'),
+            nickname: formData.get('nickname'),
+            phone: formData.get('phone') || null,
+            email: formData.get('email') || null,
+            captcha: formData.get('captcha')
+        };
+
+        // 简单的二次确认密码验证
+        if (registerData.password !== formData.get('confirmPassword')) {
+            alert('两次输入密码不一致');
+            return;
+        }
+
+        registerBtn.disabled = true;
+        registerBtn.textContent = '注册中...';
+
+        try {
+            const response = await fetch('http://localhost:18001/api/user/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(registerData)
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                alert(result.message + '，即将跳转到登录页面');
+                setTimeout(() => {
+                    window.location.href = 'http://localhost:18001/index.html';
+                }, 1000);
+            } else {
+                alert('错误:' + result.message);
+                refreshCaptcha();
+                document.getElementById('captcha').value = '';
+            }
+        } catch (error) {
+            console.error('注册错误:', error);
+            alert('注册请求失败，请检查网络连接');
+            refreshCaptcha();
+            document.getElementById('captcha').value = '';
+        } finally {
+            registerBtn.disabled = false;
+            registerBtn.textContent = '注 册';
+        }
+    }
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+        refreshCaptcha();
+        usernameInput.addEventListener('blur', checkUsernameAvailable);
+        form.addEventListener('submit', handleRegister);
+        document.getElementById('captchaImage').addEventListener('click', refreshCaptcha);
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,361 @@
+/* ========== 全局样式 ========== */
+body {
+    font-family: 'Microsoft YaHei', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f7fa;
+}
+
+/* ========== 顶部导航栏 ========== */
+.top-navbar {
+    background: linear-gradient(135deg, #2c5f2d 0%, #97bc62 100%);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.navbar-content {
+    width: 100%;
+    max-width: 1400px;
+    padding: 0 10px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 auto;
+}
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    flex-shrink: 0;
+}
+.pet-icon { font-size: 28px; }
+.logo-text { font-size: 20px; font-weight: 600; }
+
+/* ========= 导航菜单 ========= */
+.nav-menu {
+    display: flex;
+    gap: 6px;
+    flex: 1;
+    justify-content: center;
+    max-width: 1200px;
+    overflow-x: hidden; /* ← 关键：禁止横向滚动 */
+    padding: 0 10px;
+    white-space: nowrap;
+}
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 12px;
+    white-space: nowrap;
+    /* 限制宽度，防止过长文本撑开 */
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.nav-item:hover,
+.nav-item.active {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.nav-item i {
+    font-size: 14px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    flex-shrink: 0;
+    position: relative;
+}
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+.username {
+    font-size: 15px;
+    font-weight: 500;
+}
+.el-icon-arrow-down {
+    font-size: 12px;
+    margin-left: 4px;
+}
+
+/* 下拉菜单 */
+.user-dropdown {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background: white;
+    border: 1px solid #e4e7ed;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    min-width: 120px;
+    display: none;
+}
+.user-dropdown.show {
+    display: block;
+}
+.dropdown-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #606266;
+}
+.dropdown-item:hover {
+    background: #f5f7fa;
+}
+.dropdown-divider {
+    height: 1px;
+    background: #e4e7ed;
+    margin: 4px 0;
+}
+
+/* ========== 商品详情主容器 ========== */
+.product-detail-container {
+    max-width: 1400px;
+    margin: 20px auto;
+    padding: 0 20px;
+    min-height: calc(100vh - 130px);
+    margin-bottom: 30px;
+}
+
+.back-button {
+    margin-bottom: 20px;
+}
+
+/* 图片区域 */
+.image-section {
+    position: sticky;
+    top: 90px;
+    overflow: visible;
+}
+
+.main-image-container {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    background: #f5f7fa;
+    border-radius: 12px;
+    overflow: visible;
+    cursor: crosshair;
+}
+
+.main-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+/* 放大镜 */
+.magnifier {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border: 2px solid #2c5f2d;
+    background: rgba(255, 255, 255, 0.3);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.magnified-view {
+    position: absolute;
+    right: -320px;
+    top: 0;
+    width: 300px;
+    height: 300px;
+    border: 2px solid #2c5f2d;
+    background-color: white;
+    background-repeat: no-repeat;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    pointer-events: none;
+    z-index: 20;
+}
+
+/* 缩略图 */
+.thumbnail-list {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.thumbnail-item {
+    width: 80px;
+    height: 80px;
+    border: 2px solid #dcdfe6;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.thumbnail-item:hover,
+.thumbnail-item.active {
+    border-color: #2c5f2d;
+    transform: scale(1.05);
+}
+
+.thumbnail-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 商品信息 */
+.info-section {
+    padding: 20px 0;
+}
+
+.product-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #303133;
+    margin-bottom: 15px;
+    line-height: 1.4;
+}
+
+.product-meta {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.price-section {
+    background: linear-gradient(135deg, #fff4e6 0%, #ffe7cc 100%);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+}
+
+.price-value .symbol {
+    font-size: 24px;
+    color: #f56c6c;
+    font-weight: 700;
+}
+
+.price-value .value {
+    font-size: 42px;
+    color: #f56c6c;
+    font-weight: 700;
+    margin-left: 5px;
+}
+
+.detail-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #303133;
+    margin-bottom: 10px;
+}
+
+.detail-content {
+    font-size: 14px;
+    color: #606266;
+    line-height: 1.8;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.extra-info {
+    background: #f5f7fa;
+    padding: 20px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.info-row i {
+    font-size: 18px;
+    color: #2c5f2d;
+}
+
+/* 评价区域 */
+.review-section {
+    margin-top: 30px;
+}
+
+.review-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.review-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.review-item {
+    padding: 20px;
+    background: #f5f7fa;
+    border-radius: 12px;
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* 响应式 */
+@media (max-width: 992px) {
+    .image-section {
+        position: relative;
+        top: 0;
+        margin-bottom: 30px;
+    }
+
+    .magnified-view {
+        display: none;
+    }
+
+    .main-image-container {
+        cursor: pointer;
+        height: 400px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .action-buttons .el-button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .product-title {
+        font-size: 22px;
+    }
+
+    .price-value .value {
+        font-size: 32px;
+    }
+
+    .main-image-container {
+        height: 350px;
+    }
+}

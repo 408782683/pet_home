@@ -1,0 +1,465 @@
+/* ========== 全局样式 ========== */
+body {
+    font-family: 'Microsoft YaHei', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f7fa;
+}
+
+/* ========== 顶部导航栏 ========== */
+.top-navbar {
+    background: linear-gradient(135deg, #2c5f2d 0%, #97bc62 100%);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.navbar-content {
+    width: 100%;
+    max-width: 1400px;
+    padding: 0 10px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 auto;
+}
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    flex-shrink: 0;
+}
+.pet-icon {
+    font-size: 28px;
+}
+.logo-text {
+    font-size: 20px;
+    font-weight: 600;
+}
+/* ========= 导航菜单 ========= */
+.nav-menu {
+    display: flex;
+    gap: 6px;
+    flex: 1;
+    justify-content: center;
+    max-width: 1200px;
+    overflow-x: hidden;
+    padding: 0 10px;
+    white-space: nowrap;
+}
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 12px;
+    white-space: nowrap;
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.nav-item:hover,
+.nav-item.active {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+.nav-item i {
+    font-size: 14px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    flex-shrink: 0;
+    position: relative;
+}
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+.username {
+    font-size: 15px;
+    font-weight: 500;
+}
+.el-icon-arrow-down {
+    font-size: 12px;
+    margin-left: 4px;
+}
+
+/* 下拉菜单 */
+.user-dropdown {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background: white;
+    border: 1px solid #e4e7ed;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    min-width: 120px;
+    display: none;
+}
+.user-dropdown.show {
+    display: block;
+}
+.dropdown-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #606266;
+}
+.dropdown-item:hover {
+    background: #f5f7fa;
+}
+.dropdown-divider {
+    height: 1px;
+    background: #e4e7ed;
+    margin: 4px 0;
+}
+
+/* 论坛列表容器（复用寄养容器结构，调整间距） */
+.forum-list-container {
+    margin-top: 70px;
+    padding: 20px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    min-height: calc(100vh - 130px);
+    padding-bottom: 20px;
+}
+
+/* 顶部操作栏（发布按钮区域） */
+.top-actions {
+    margin-bottom: 20px;
+    text-align: right;
+}
+
+/* 帖子列表网格（复用寄养卡片网格布局逻辑） */
+.posts-grid {
+    min-height: 400px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+/* 帖子卡片（参考寄养卡片样式，调整高度和内部布局） */
+.post-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px;
+    height: 420px;
+    display: flex;
+    flex-direction: column;
+}
+
+.post-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* 搜索筛选区域 */
+.search-section {
+    margin-bottom: 20px;
+}
+.search-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+}
+.search-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.search-item label {
+    font-size: 14px;
+    color: #606266;
+    font-weight: 500;
+}
+.search-item .el-input {
+    width: 200px;
+}
+.search-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+/* 筛选按钮区域 */
+.filter-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e4e7ed;
+}
+.filter-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.filter-group:last-child {
+    margin-bottom: 0;
+}
+.filter-group > label {
+    font-size: 14px;
+    color: #606266;
+    font-weight: 500;
+    min-width: 90px;
+}
+.filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.filter-btn {
+    padding: 8px 20px;
+    border: 1px solid #dcdfe6;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #606266;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: white;
+}
+.filter-btn:hover {
+    color: #2c5f2d;
+    border-color: #2c5f2d;
+    background: #f0f9f0;
+}
+.filter-btn.active {
+    color: white;
+    background: linear-gradient(135deg, #2c5f2d 0%, #97bc62 100%);
+    border-color: #2c5f2d;
+    font-weight: 600;
+}
+
+/* 帖子图片区域（复用寄养图片样式，调整高度） */
+.post-image {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    background: #f5f7fa;
+}
+
+.post-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.post-card:hover .post-image img {
+    transform: scale(1.1);
+}
+
+/* 无图片占位 */
+.no-image {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #c0c4cc;
+    font-size: 60px;
+}
+
+/* 我的帖子标签（复用寄养标签样式） */
+.my-post-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: linear-gradient(135deg, #f56c6c 0%, #f5222d 100%);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(245, 108, 108, 0.4);
+}
+
+/* 帖子信息区域（参考寄养信息布局） */
+.post-info {
+    padding: 15px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.post-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #303133;
+    margin-bottom: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.post-description {
+    font-size: 14px;
+    color: #606266;
+    line-height: 1.5;
+    margin-bottom: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    flex: 1;
+}
+
+/* 帖子关键词标签 */
+.post-keywords {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: auto;
+}
+
+/* 帖子底部信息（参考寄养底部布局） */
+.post-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    border-top: 1px solid #e4e7ed;
+    background: #fafafa;
+}
+
+.post-author {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.post-author-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e4e7ed;
+    flex-shrink: 0;
+}
+
+.post-author-name {
+    font-size: 13px;
+    color: #606266;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 帖子统计信息 */
+.post-stats {
+    display: flex;
+    gap: 15px;
+    flex-shrink: 0;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    color: #909399;
+    font-size: 13px;
+    gap: 4px;
+}
+
+/* 分页区域（复用寄养分页样式） */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+/* 空状态样式调整 */
+.empty-container {
+    text-align: center;
+    padding: 50px 0;
+}
+
+/* 发布帖子弹窗专属样式修复 */
+.el-dialog__body {
+    padding: 20px !important;
+}
+
+.el-form-item {
+    margin-bottom: 18px !important;
+}
+
+.el-form-item__label {
+    padding-right: 10px !important;
+}
+
+.el-upload--picture-card {
+    width: 80px !important;
+    height: 80px !important;
+    line-height: 80px !important;
+}
+
+.el-upload-list--picture-card .el-upload-list__item {
+    width: 80px !important;
+    height: 80px !important;
+}
+
+.el-textarea__inner {
+    resize: vertical !important;
+}
+
+/* 响应式适配（与寄养页面保持一致） */
+@media (max-width: 1600px) {
+    .posts-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 1200px) {
+    .posts-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .search-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-item .el-input {
+        width: 100%;
+    }
+
+    .filter-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .filter-group > label {
+        min-width: auto;
+    }
+
+    .posts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .post-card {
+        height: auto;
+    }
+}

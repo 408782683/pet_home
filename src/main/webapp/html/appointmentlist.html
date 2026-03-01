@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>预约记录 - 伴侣宠物之家</title>
+
+  <!-- 引入 Element UI 样式 -->
+  <link rel="stylesheet" href="/css/index.css">
+
+  <!-- 引入 Vue 和 Element UI JS -->
+  <script src="/js/vue.min.js"></script>
+  <script src="/js/index.js"></script>
+  <!--引入检查登录状态-->
+  <script src="/js/check.js"></script>
+
+  <link rel="stylesheet" href="/css/appointmentlist.css">
+</head>
+<body>
+<div id="app">
+  <!-- 顶部导航栏 -->
+  <div class="top-navbar">
+    <div class="navbar-content">
+      <div class="logo">
+        <span class="pet-icon">🐾</span>
+        <span class="logo-text">{{ systemName }}</span>
+      </div>
+
+      <div class="nav-menu">
+        <div class="nav-item" @click="goTo('/html/userhome.html')">
+          <i class="el-icon-s-home"></i>
+          <span>首页</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/productlist.html')">
+          <i class="el-icon-shopping-bag-2"></i>
+          <span>商品一览</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/insurancelist.html')">
+          <i class="el-icon-s-home"></i>
+          <span>宠物保险</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/policylist.html')">
+          <i class="el-icon-document-checked"></i>
+          <span>我的保单</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/claimlist.html')">
+          <i class="el-icon-warning-outline"></i>
+          <span>申保记录</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/hospitallist.html')">
+          <i class="el-icon-office-building"></i>
+          <span>宠物医院</span>
+        </div>
+        <div class="nav-item active" @click="goTo('/html/appointmentlist.html')">
+          <i class="el-icon-s-order"></i>
+          <span>预约记录</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/breedinglist.html')">
+          <i class="el-icon-search"></i>
+          <span>寻找配种</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/fosterlist.html')">
+          <i class="el-icon-house"></i>
+          <span>宠物寄养</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/adoptionlist.html')">
+          <i class="el-icon-present"></i>
+          <span>宠物领养</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/forumlist.html')">
+          <i class="el-icon-chat-dot-square"></i>
+          <span>论坛</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/usercart.html')">
+          <i class="el-icon-shopping-cart-2"></i>
+          <span>购物车</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/orderlist.html')">
+          <i class="el-icon-s-order"></i>
+          <span>我的订单</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/reviewlist.html')">
+          <i class="el-icon-chat-line-square"></i>
+          <span>我的评价</span>
+        </div>
+      </div>
+
+      <div class="user-info" v-if="userInfo" @click="toggleDropdown">
+        <img :src="userInfo.avatar || defaultAvatar" class="user-avatar" />
+        <span class="username">{{ userInfo.nickname }}</span>
+        <i class="el-icon-arrow-down"></i>
+
+        <div class="user-dropdown" :class="{ show: dropdownVisible }">
+          <div class="dropdown-item" @click.stop="goToProfile">个人资料</div>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item" @click.stop="logout">退出登录</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 预约记录内容 -->
+  <div class="appointment-list-container">
+    <!-- 搜索筛选区域 -->
+    <div class="search-section">
+      <el-card shadow="hover">
+        <div class="search-form">
+          <!-- 医院名称搜索 -->
+          <div class="search-item">
+            <label>医院名称</label>
+            <el-input
+                    v-model="searchForm.hospitalName"
+                    placeholder="请输入医院名称"
+                    clearable
+                    @clear="handleSearch">
+            </el-input>
+          </div>
+          <!-- 搜索按钮 -->
+          <div class="search-buttons">
+            <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
+            <el-button icon="el-icon-refresh-left" @click="handleReset">重置</el-button>
+          </div>
+        </div>
+
+        <!-- 状态筛选按钮 -->
+        <div class="filter-section">
+          <div class="filter-group">
+            <label>预约状态：</label>
+            <div class="filter-buttons">
+              <div
+                      class="filter-btn"
+                      :class="{ active: searchForm.status === '' }"
+                      @click="filterByStatus('')">
+                全部
+              </div>
+              <div
+                      class="filter-btn"
+                      :class="{ active: searchForm.status === '待赴约' }"
+                      @click="filterByStatus('待赴约')">
+                待赴约
+              </div>
+              <div
+                      class="filter-btn"
+                      :class="{ active: searchForm.status === '已到店' }"
+                      @click="filterByStatus('已到店')">
+                已到店
+              </div>
+              <div
+                      class="filter-btn"
+                      :class="{ active: searchForm.status === '已完成' }"
+                      @click="filterByStatus('已完成')">
+                已完成
+              </div>
+            </div>
+          </div>
+        </div>
+      </el-card>
+    </div>
+
+    <!-- 预约列表 -->
+    <div class="appointment-list">
+      <el-card
+              v-for="appointment in appointmentList"
+              :key="appointment.id"
+              shadow="hover"
+              class="appointment-card">
+        <div class="appointment-header">
+          <div class="appointment-title">
+            <h3>{{ appointment.hospitalName }}</h3>
+            <el-tag :type="getStatusType(appointment.status)" size="medium">
+              {{ appointment.status }}
+            </el-tag>
+          </div>
+          <div class="appointment-time">
+            预约时间：{{ formatDate(appointment.appointmentDate) }} {{ appointment.appointmentTime }}
+          </div>
+        </div>
+        <div class="appointment-content">
+          <div class="content-item">
+            <label>宠物信息：</label>
+            <span>{{ appointment.petName }}（{{ appointment.petType }}）</span>
+          </div>
+          <div class="content-item">
+            <label>病情描述：</label>
+            <span>{{ appointment.conditionDescription }}</span>
+          </div>
+          <div class="content-item" v-if="appointment.images">
+            <label>病情图片：</label>
+            <div class="image-list">
+              <img
+                      v-for="(image, index) in getImageList(appointment.images)"
+                      :key="index"
+                      :src="image"
+                      @click="previewImage(image)"
+              />
+            </div>
+          </div>
+          <div class="content-item">
+            <label>联系电话：</label>
+            <span>{{ appointment.contactPhone }}</span>
+          </div>
+          <div class="content-item">
+            <label>创建时间：</label>
+            <span>{{ formatDateTime(appointment.createTime) }}</span>
+          </div>
+        </div>
+        <div class="appointment-actions" v-if="appointment.status === '待赴约'">
+          <el-button type="success" size="small" icon="el-icon-check" @click="reportArrival(appointment)">
+            上报到店
+          </el-button>
+          <el-button type="danger" size="small" icon="el-icon-close" @click="cancelAppointment(appointment)">
+            取消预约
+          </el-button>
+        </div>
+      </el-card>
+
+      <!-- 空状态 -->
+      <el-empty v-if="appointmentList.length === 0" description="暂无预约记录"></el-empty>
+    </div>
+
+    <!-- 分页 -->
+    <div class="pagination-section" v-if="total > 0">
+      <el-pagination
+              background
+              @current-change="handlePageChange"
+              :current-page="currentPage"
+              :page-size="pageSize"
+              layout="total, prev, pager, next, jumper"
+              :total="total">
+      </el-pagination>
+    </div>
+  </div>
+</div>
+
+<script>
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+        systemName: '伴侣宠物之家',
+        userInfo: JSON.parse(localStorage.getItem('userInfo')) || null,
+        token: localStorage.getItem('authToken') || '',
+        dropdownVisible: false,
+        defaultAvatar: 'https://img1.baidu.com/it/u=2531584226,2194794184&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500',
+
+        searchForm: {
+          hospitalName: '',
+          status: ''
+        },
+        appointmentList: [],
+        currentPage: 1,
+        pageSize: 10,
+        total: 0,
+        loading: false
+      };
+    },
+    created() {
+      this.loadAppointments();
+    },
+    methods: {
+      async loadAppointments() {
+        if (!this.userInfo) {
+          this.$notify.warning({ title: '提示', message: '请先登录', duration: 2000 });
+          setTimeout(() => window.location.href = '/index.html', 1000);
+          return;
+        }
+
+        const params = {
+          page: this.currentPage,
+          size: this.pageSize,
+          userId: this.userInfo.id
+        };
+
+        if (this.searchForm.hospitalName) {
+          params.hospitalName = this.searchForm.hospitalName;
+        }
+        if (this.searchForm.status) {
+          params.status = this.searchForm.status;
+        }
+
+        try {
+          const res = await fetch(`/api/appointment/findByPage`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${this.token}` ,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(params)
+          });
+          const data = await res.json();
+          if (data.success) {
+            this.appointmentList = data.data.appointmentList || [];
+            this.total = data.data.total || 0;
+          } else {
+            this.$message.error(data.message || '加载失败');
+          }
+        } catch (err) {
+          this.$message.error('网络错误，请稍后重试');
+        }
+      },
+
+      handleSearch() {
+        this.currentPage = 1;
+        this.loadAppointments();
+      },
+
+      handleReset() {
+        this.searchForm = { hospitalName: '', status: '' };
+        this.handleSearch();
+      },
+
+      filterByStatus(status) {
+        this.searchForm.status = status;
+        this.handleSearch();
+      },
+
+      handlePageChange(page) {
+        this.currentPage = page;
+        this.loadAppointments();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      },
+
+      getStatusType(status) {
+        const typeMap = {
+          '待赴约': 'warning',
+          '已到店': 'primary',
+          '已完成': 'success'
+        };
+        return typeMap[status] || 'info';
+      },
+
+      getImageList(images) {
+        if (!images) return [];
+        return images.split(',').filter(img => img.trim());
+      },
+
+      formatDate(date) {
+        if (!date) return '';
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      },
+
+      formatDateTime(datetime) {
+        if (!datetime) return '';
+        const d = new Date(datetime);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}`;
+      },
+
+      previewImage(url) {
+        const img = new Image();
+        img.src = url;
+        img.style.maxWidth = '90vw';
+        img.style.maxHeight = '90vh';
+        const win = window.open('', '_blank');
+        win.document.write(img.outerHTML);
+      },
+
+      async reportArrival(appointment) {
+        this.$confirm('确认已到店吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'success'
+        }).then(async () => {
+          try {
+            const res = await fetch('/api/appointment/status', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.token}`
+              },
+              body: JSON.stringify({
+                id: appointment.id,
+                status: '已到店'
+              })
+            });
+            const data = await res.json();
+            if (data.success) {
+              this.$message.success('上报到店成功');
+              this.loadAppointments();
+            } else {
+              this.$message.error(data.message || '操作失败');
+            }
+          } catch (err) {
+            this.$message.error('网络错误');
+          }
+        }).catch(() => {});
+      },
+
+      async cancelAppointment(appointment) {
+        this.$confirm('确定要取消这个预约吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(async () => {
+          try {
+            const res = await fetch(`/api/appointment/cancel/${appointment.id}`, {
+              method: 'DELETE',
+              headers: { 'Authorization': `Bearer ${this.token}` }
+            });
+            const data = await res.json();
+            if (data.success) {
+              this.$message.success('已取消预约');
+              this.loadAppointments();
+            } else {
+              this.$message.error(data.message || '取消失败');
+            }
+          } catch (err) {
+            this.$message.error('网络错误');
+          }
+        }).catch(() => {});
+      },
+
+      goTo(path) {
+        window.location.href = path;
+      },
+      goToProfile() {
+        window.location.href = '/html/user-profile.html';
+      },
+      logout() {
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem("authToken");
+        this.userInfo = null;
+        window.location.href = '/index.html';
+      },
+      toggleDropdown() {
+        this.dropdownVisible = !this.dropdownVisible;
+      }
+    }
+  });
+</script>
+</body>
+</html>

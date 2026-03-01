@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>我的订单 - 伴侣宠物之家🐾</title>
+
+    <!-- 引入Element UI样式（本地资源） -->
+    <link rel="stylesheet" href="/css/index.css">
+    <!-- 引入Vue和Element UI JS（本地资源） -->
+    <script src="/js/vue.min.js"></script>
+    <script src="/js/index.js"></script>
+    <!-- 登录状态检查 -->
+    <script src="/js/check.js"></script>
+
+    <!-- 自定义样式（你的 orderlist.css） -->
+    <link rel="stylesheet" href="/css/orderlist.css">
+
+</head>
+<body>
+
+<div id="app">
+
+    <!-- 顶部导航栏 -->
+    <div class="top-navbar">
+        <div class="navbar-content">
+            <div class="logo">
+                <span class="pet-icon">🐾</span>
+                <span class="logo-text">伴侣宠物之家</span>
+            </div>
+
+            <div class="nav-menu">
+                <div class="nav-item" @click="goTo('/html/userhome.html')">
+                    <i class="el-icon-s-home"></i>
+                    <span>首页</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/productlist.html')">
+                    <i class="el-icon-shopping-bag-2"></i>
+                    <span>商品一览</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/insurancelist.html')">
+                    <i class="el-icon-shield"></i>
+                    <span>宠物保险</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/policylist.html')">
+                    <i class="el-icon-document-checked"></i>
+                    <span>我的保单</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/claimlist.html')">
+                    <i class="el-icon-warning-outline"></i>
+                    <span>申保记录</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/hospitallist.html')">
+                    <i class="el-icon-office-building"></i>
+                    <span>宠物医院</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/appointmentlist.html')">
+                    <i class="el-icon-s-order"></i>
+                    <span>预约记录</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/breedinglist.html')">
+                    <i class="el-icon-search"></i>
+                    <span>寻找配种</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/fosterlist.html')">
+                    <i class="el-icon-house"></i>
+                    <span>宠物寄养</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/adoptionlist.html')">
+                    <i class="el-icon-present"></i>
+                    <span>宠物领养</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/forumlist.html')">
+                    <i class="el-icon-chat-dot-square"></i>
+                    <span>论坛</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/usercart.html')">
+                    <i class="el-icon-shopping-cart-2"></i>
+                    <span>购物车</span>
+                </div>
+                <div class="nav-item active" @click="goTo('/html/orderlist.html')">
+                    <i class="el-icon-s-order"></i>
+                    <span>我的订单</span>
+                </div>
+                <div class="nav-item" @click="goTo('/html/reviewlist.html')">
+                    <i class="el-icon-chat-line-square"></i>
+                    <span>我的评价</span>
+                </div>
+            </div>
+
+            <div class="user-info" v-if="userInfo" @click="toggleDropdown">
+                <img :src="userInfo.avatar || defaultAvatar" class="user-avatar"/>
+                <span class="username">{{ userInfo.nickname }}</span>
+                <i class="el-icon-arrow-down"></i>
+
+                <!-- 用户下拉菜单 -->
+                <div class="user-dropdown" :class="{ show: dropdownVisible }">
+                    <div class="dropdown-item" @click.stop="goToProfile">个人资料</div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item" @click.stop="logout">退出登录</div>
+                </div>
+            </div>
+
+            <div class="user-info" v-else>
+                <el-button type="text" style="color: white" @click="goToLogin">登录</el-button>
+            </div>
+        </div>
+    </div>
+
+    <div class="order-list-container">
+        <el-card shadow="hover">
+            <div slot="header" class="card-header">
+        <span class="header-title">
+          <i class="el-icon-s-order"></i> 我的订单
+        </span>
+            </div>
+
+            <!-- 状态筛选 -->
+            <div class="filter-buttons">
+                <el-button
+                        v-for="item in statusOptions"
+                        :key="item.value"
+                        :type="currentStatus === item.value ? 'primary' : 'default'"
+                        size="medium"
+                        @click="handleStatusFilter(item.value)"
+                        style="width: 100px; margin-right: 8px; height: 36px; line-height: 36px;"
+                >
+                    {{ item.label }}
+
+                </el-button>
+            </div>
+
+            <!-- 订单列表 -->
+            <div class="order-list">
+                <div v-for="order in orderList" :key="order.id" class="order-card">
+                    <!-- 头部 -->
+                    <div class="order-header">
+                        <div class="order-info-left">
+                            <span class="order-no">订单编号：{{ order.orderNo }}</span>
+                            <span class="order-time">{{ formatDate(order.createTime) }}</span>
+                        </div>
+                        <el-tag :type="getStatusType(order.status)" size="medium">
+                            {{ order.status }}
+                        </el-tag>
+                    </div>
+
+                    <!-- 商品 -->
+                    <div class="order-products">
+                        <div v-for="details in order.details" :key="details.id" class="product-item">
+                            <img :src="details.productImage || 'https://via.placeholder.com/80'" :alt="details.productName" class="product-image">
+                            <div class="product-info">
+                                <div class="product-name" @click="goToProductDetail(details.productId)">
+                                    {{ details.productName }}
+                                </div>
+                                <div class="product-spec">
+                                    <span class="product-price">¥{{ details.price }}</span>
+                                    <span class="product-quantity">x{{ details.quantity }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 底部 -->
+                    <div class="order-footer">
+                        <div class="order-address">
+                            <i class="el-icon-location-outline"></i>
+                            收货地址：{{ order.receiverAddress }}
+                            <span class="receiver-info">{{ order.receiverName }} {{ order.receiverPhone }}</span>
+                        </div>
+                        <div class="order-actions">
+                            <div class="total-amount">
+                                <span class="label">订单金额：</span>
+                                <span class="amount">¥{{ order.totalAmount }}</span>
+                            </div>
+                            <div class="action-buttons">
+                                <el-button
+                                        v-if="order.status === '待发货'"
+                                        type="danger"
+                                        size="small"
+                                        plain
+                                        @click="handleCancelOrder(order.id)"
+                                >
+                                    取消订单
+                                </el-button>
+                                <el-button
+                                        v-if="order.status === '已发货'"
+                                        type="success"
+                                        size="small"
+                                        @click="handleConfirmReceipt(order.id)"
+                                >
+                                    确认收货
+                                </el-button>
+                                <el-button
+                                        v-if="order.status === '已收货'"
+                                        type="warning"
+                                        size="small"
+                                        @click="handleReviewOrder(order)"
+                                >
+                                    评价商品
+                                </el-button>
+                                <!-- 如果是“待付款”，可加“去支付”按钮 -->
+                                <el-button
+                                        v-if="order.status === '待付款'"
+                                        type="primary"
+                                        size="small"
+                                        @click="handlePayOrder(order.id)"
+                                >
+                                    去支付
+                                </el-button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 空状态 -->
+                <el-empty v-if="orderList.length === 0" description="暂无订单">
+                    <el-button type="primary" @click="goToProductList">去购物</el-button>
+                </el-empty>
+            </div>
+
+            <!-- 分页（模拟） -->
+            <div class="pagination-container" v-if="total > 0" style="text-align: center; margin-top: 30px;">
+                <el-pagination
+                        background
+                        layout="total, prev, pager, next, sizes"
+                        :current-page="currentPage"
+                        :page-size="pageSize"
+                        :page-sizes="[10, 20, 30, 50]"
+                        :total="total"
+                        @current-change="handlePageChange"
+                        @size-change="handleSizeChange"
+                >
+                </el-pagination>
+            </div>
+        </el-card>
+    </div>
+
+    <!-- 评价弹窗 -->
+    <el-dialog
+            title="评价商品"
+            :visible.sync="reviewDialogVisible"
+            width="700px"
+            @close="resetReviewForm"
+    >
+        <div class="review-dialog-content">
+            <div class="product-select-section">
+                <div class="section-title">请选择要评价的商品：</div>
+                <div class="product-list" style="display: flex; flex-wrap: wrap; gap: 15px;">
+                    <div
+                            v-for="product in currentOrderProducts"
+                            :key="product.id"
+                            class="product-item-dialog"
+                            :class="{ 'selected': selectedProductId === product.productId, 'reviewed': product.reviewed }"
+                            @click="selectProduct(product)"
+                    >
+                        <img :src="product.productImage || 'https://via.placeholder.com/100'" class="product-img">
+                        <div class="product-name-dialog">{{ product.productName }}</div>
+                        <div v-if="product.reviewed" class="reviewed-badge">
+                            <i class="el-icon-success"></i> 已评价
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <el-form
+                    v-if="selectedProductId"
+                    ref="reviewForm"
+                    :model="reviewForm"
+                    :rules="reviewRules"
+                    label-width="80px"
+                    class="review-form"
+            >
+                <el-form-item label="评分" prop="rating">
+                    <el-rate
+                            v-model="reviewForm.rating"
+                            show-text
+                            :texts="['极差', '失望', '一般', '满意', '惊喜']"
+                    ></el-rate>
+                </el-form-item>
+                <el-form-item label="评价内容" prop="content">
+                    <el-input
+                            type="textarea"
+                            v-model="reviewForm.content"
+                            :rows="6"
+                            placeholder="请输入您的评价内容..."
+                            maxlength="500"
+                            show-word-limit
+                    ></el-input>
+                </el-form-item>
+            </el-form>
+
+            <div v-else class="select-hint">
+                <i class="el-icon-info"></i>
+                <p>请先选择要评价的商品</p>
+            </div>
+        </div>
+        <span slot="footer" class="dialog-footer">
+      <el-button @click="reviewDialogVisible = false">取消</el-button>
+      <el-button type="primary" @click="submitReview" :disabled="!selectedProductId">发布评价</el-button>
+    </span>
+    </el-dialog>
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                // 导航栏相关
+                userInfo: JSON.parse(localStorage.getItem('userInfo')) || null,
+                token: localStorage.getItem('authToken') || '',
+                dropdownVisible: false,
+                defaultAvatar: "https://q6.itc.cn/q_70/images03/20250306/355fba6a5cb049f5b98c2ed9f03cc5e1.jpeg",
+                orderList: [], // 订单列表
+                currentPage: 1,
+                pageSize: 10,
+                total: 0,
+                currentStatus: '',
+                statusOptions: [
+                    { label: '全部订单', value: '' },
+                    { label: '待付款', value: '待付款' },
+                    { label: '待发货', value: '待发货' },
+                    { label: '已发货', value: '已发货' },
+                    { label: '已收货', value: '已收货' }
+                ],
+                statusCounts: {
+                    '待付款': 0,
+                    '待发货': 1,
+                    '已发货': 2,
+                    '已收货': 3
+                },
+                reviewDialogVisible: false,
+                currentOrderId: null,
+                currentOrderProducts: [],
+                selectedProductId: null,
+                reviewForm: {
+                    rating: 5,
+                    content: ''
+                },
+                reviewRules: {
+                    rating: [{ required: true, message: '请选择评分', trigger: 'change' }],
+                    content: [
+                        { required: true, message: '请输入评价内容', trigger: 'blur' },
+                        { min: 5, max: 500, message: '长度在 5 到 500 字符', trigger: 'blur' }
+                    ]
+                }
+            };
+        },
+        created() {
+            this.loadOrderList();
+        },
+        methods: {
+            async loadOrderList() {
+                const params = {
+                    page: this.currentPage,
+                    size: this.pageSize,
+                    status: this.currentStatus,
+                    userId: this.userInfo.id
+                };
+
+                try {
+                    const res = await fetch(`/api/order/listByPage`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${this.token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(params)
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        this.orderList = data.data.orderList || [];
+                        this.total = data.data.total || 0;
+                    } else {
+                        this.$message.error(data.message || '加载失败');
+                    }
+                } catch (err) {
+                    this.$message.error('网络错误，请稍后重试');
+                }
+            },
+            handleStatusFilter(status) {
+                this.currentStatus = status;
+                this.currentPage = 1;
+                this.loadOrderList();
+            },
+            formatDate(dateStr) {
+                if (!dateStr) return '';
+                const d = new Date(dateStr);
+                return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+            },
+            getStatusType(status) {
+                const map = { '待发货': 'warning', '已发货': 'primary', '已收货': 'success', '待付款': 'danger' };
+                return map[status] || 'info';
+            },
+            handleCancelOrder(id) {
+                this.$confirm('确定取消该订单？', '提示', { type: 'warning' })
+                    .then(() => {
+                        this.$message.success('订单已取消');
+                        this.loadOrderList();
+                    });
+            },
+            handleConfirmReceipt(id) {
+                this.$confirm('确认已收到货物？', '提示', { type: 'warning' })
+                    .then(() => {
+                        // 模拟更新状态
+                        const order = this.orderList.find(o => o.id === id);
+                        if (order) order.status = '已收货';
+                        this.$message.success('确认收货成功');
+                    });
+            },
+            handlePayOrder(id) {
+                this.$message.info('跳转支付...');
+                // 实际应跳转支付页面
+            },
+            handleReviewOrder(order) {
+                this.currentOrderId = order.id;
+                this.currentOrderProducts = order.details.map(d => ({
+                    ...d,
+                    reviewed: false // 实际应调用 checkReviewed API
+                }));
+                this.reviewDialogVisible = true;
+            },
+            selectProduct(product) {
+                if (product.reviewed) {
+                    this.$message.info('该商品已评价');
+                    return;
+                }
+                this.selectedProductId = product.productId;
+            },
+            submitReview() {
+                if (!this.selectedProductId) {
+                    this.$message.warning('请选择商品');
+                    return;
+                }
+                this.$refs.reviewForm.validate(valid => {
+                    if (valid) {
+                        this.$message.success('评价成功！');
+                        this.reviewDialogVisible = false;
+                        this.resetReviewForm();
+                    }
+                });
+            },
+            resetReviewForm() {
+                if (this.$refs.reviewForm) this.$refs.reviewForm.resetFields();
+                this.selectedProductId = null;
+                this.reviewForm = { rating: 5, content: '' };
+            },
+            goToProductDetail(id) {
+                alert(`跳转商品详情: ${id}`);
+            },
+            goToProductList() {
+                window.location.href = '/product-list';
+            },
+            handlePageChange(page) {
+                this.currentPage = page;
+                // 实际应重新请求分页数据
+            },
+            handleSizeChange(size) {
+                this.pageSize = size;
+                this.currentPage = 1;
+            },
+            // 导航栏跳转方法
+            goTo(path) {
+                window.location.href = path;
+            },
+            goToLogin() {
+                this.goTo('/index.html');
+            },
+            goToProfile() {
+                this.goTo('/html/user-profile.html');
+                this.dropdownVisible = false;
+            },
+            logout() {
+                localStorage.removeItem('userInfo');
+                localStorage.removeItem("authToken");
+                this.userInfo = null;
+                window.location.href = '/index.html';
+            },
+            toggleDropdown() {
+                this.dropdownVisible = !this.dropdownVisible;
+            },
+        }
+    });
+</script>
+
+</body>
+</html>

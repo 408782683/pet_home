@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>商品详情 - 伴侣宠物之家🐾</title>
+
+    <!-- Element UI CSS -->
+    <link rel="stylesheet" href="/css/index.css">
+    <!-- Vue CDN -->
+    <script src="/js/vue.min.js"></script>
+    <!-- Element UI JS -->
+    <script src="/js/index.js"></script>
+    <!--引入检查登录状态-->
+    <script src="/js/check.js"></script>
+
+    <link rel="stylesheet" href="/css/product-detail.css">
+</head>
+<body>
+
+<div id="app">
+
+    <!-- 顶部导航栏 -->
+    <div class="top-navbar">
+        <div class="navbar-content">
+            <div class="logo">
+                <span class="pet-icon">🐾</span>
+                <span class="logo-text">伴侣宠物之家</span>
+            </div>
+            <!-- 导航菜单 -->
+            <div class="nav-menu">
+                <div class="nav-item" :class="{ active: currentPath === '/user/home' }"
+                     @click="goTo('/html/userhome.html')">
+                    <i class="el-icon-s-home"></i>
+                    <span>首页</span>
+                </div>
+                <div class="nav-item" :class="{ active: currentPath.startsWith('/user/product') }"
+                     @click="goTo('/html/productlist.html')">
+                    <i class="el-icon-shopping-bag-2"></i>
+                    <span>商品一览</span>
+                </div>
+                <div class="nav-item" :class="{ active: currentPath === '/user/insurance-list' }"
+                     @click="goTo('/html/insurancelist.html')">
+                    <i class="el-icon-s-home"></i>
+                    <span>宠物保险</span>
+                </div>
+                <div class="nav-item" :class="{ active: currentPath === '/user/policy-list' }"
+                     @click="goTo('/html/policylist.html')">
+                    <i class="el-icon-document-checked"></i>
+                    <span>我的保单</span>
+                </div>
+                <div class="nav-item" :class="{ active: currentPath === '/user/claim-list' }"
+                     @click="goTo('/html/claimlist.html')">
+                    <i class="el-icon-warning-outline"></i>
+                    <span>申保记录</span>
+                </div>
+                <div class="nav-item" :class="{ active: currentPath.startsWith('/user/hospital') }"
+                     @click="goTo('/html/hospitallist.html')">
+                    <i class="el-icon-office-building"></i>
+                    <span>宠物医院</span>
+                </div>
+                <div class="nav-item" :class="{ active: currentPath === '/user/appointment-list' }"
+                     @click="goTo('/html/appointmentlist.html')">
+                    <i class="el-icon-s-order"></i>
+                    <span>预约记录</span>
+                </div>
+                <div class="nav-item" :class="{ active: currentPath.startsWith('/user/breeding') }"
+                     @click="goTo('/html/breedinglist.html')">
+                    <i class="el-icon-search"></i>
+                    <span>寻找配种</span>
+                </div>
+                <div class="nav-item" :class="{ active: currentPath.startsWith('/user/foster') }"
+                     @click="goTo('/html/fosterlist.html')">
+                    <i class="el-icon-house"></i>
+                    <span>宠物寄养</span>
+                </div>
+                <div class="nav-item" :class="{ active: currentPath.startsWith('/user/adoption') }"
+                     @click="goTo('/html/adoptionlist.html')">
+                    <i class="el-icon-present"></i>
+                    <span>宠物领养</span>
+                </div>
+                <div class="nav-item" :class="{ active: currentPath.startsWith('/user/forum') }"
+                     @click="goTo('/html/forumlist.html')">
+                    <i class="el-icon-chat-dot-square"></i>
+                    <span>论坛</span>
+                </div>
+                <div class="nav-item" :class="{ active: currentPath === '/user/cart' }"
+                     @click="goTo('/html/usercart.html')">
+                    <i class="el-icon-shopping-cart-2"></i>
+                    <span>购物车</span>
+                </div>
+                <div class="nav-item" :class="{ active: currentPath === '/user/order-list' }"
+                     @click="goTo('/html/orderlist.html')">
+                    <i class="el-icon-s-order"></i>
+                    <span>我的订单</span>
+                </div>
+                <div class="nav-item" :class="{ active: currentPath === '/user/review-list' }"
+                     @click="goTo('/html/reviewlist.html')">
+                    <i class="el-icon-chat-line-square"></i>
+                    <span>我的评价</span>
+                </div>
+            </div>
+
+            <!-- 用户信息 -->
+            <div class="user-info" v-if="userInfo" @click="toggleDropdown">
+                <img :src="userInfo.avatar || defaultAvatar" class="user-avatar">
+                <span class="username">{{ userInfo.nickname }}</span>
+                <i class="el-icon-arrow-down"></i>
+
+                <!-- 下拉菜单 -->
+                <div class="user-dropdown" :class="{ show: dropdownVisible }">
+                    <div class="dropdown-item" @click.stop="goToProfile">个人资料</div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item" @click.stop="logout">退出登录</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="product-detail-container">
+        <el-card shadow="hover">
+            <!-- 返回按钮 -->
+            <div class="back-button">
+                <el-button icon="el-icon-arrow-left" @click="goBack">返回商品列表</el-button>
+            </div>
+
+            <el-row :gutter="40" v-if="product">
+                <!-- 左侧：图片 -->
+                <el-col :xs="24" :sm="24" :md="12" :lg="12">
+                    <div class="image-section">
+                        <!-- 主图 + 放大镜 -->
+                        <div
+                                class="main-image-container"
+                                @mousemove="handleMouseMove"
+                                @mouseleave="handleMouseLeave"
+                                @click="openImageDialog(mainImage)"
+                        >
+                            <img :src="mainImage" :alt="product.name" class="main-image">
+                            <div v-if="showMagnifier" class="magnifier" :style="magnifierStyle"></div>
+                            <div v-if="showMagnifier" class="magnified-view" :style="magnifiedStyle"></div>
+                        </div>
+
+                        <!-- 缩略图 -->
+                        <div class="thumbnail-list" v-if="imageList.length > 1">
+                            <div
+                                    v-for="(image, index) in imageList"
+                                    :key="index"
+                                    class="thumbnail-item"
+                                    :class="{ active: mainImage === image }"
+                                    @click="selectImage(image)"
+                            >
+                                <img :src="image" :alt="'图片'+(index+1)">
+                            </div>
+                        </div>
+                    </div>
+                </el-col>
+
+                <!-- 右侧：商品信息 -->
+                <el-col :xs="24" :sm="24" :md="12" :lg="12">
+                    <div class="info-section">
+                        <h1 class="product-title">{{ product.name }}</h1>
+                        <div class="product-meta">
+                            <el-tag type="success" size="medium">{{ product.categoryName }}</el-tag>
+                            <el-tag type="warning" size="medium">{{ product.petType }}</el-tag>
+                            <el-tag v-if="product.brand" type="info" size="medium">{{ product.brand }}</el-tag>
+                        </div>
+                        <div class="price-section">
+                            <div class="price-label">价格</div>
+                            <div class="price-value">
+                                <span class="symbol">¥</span>
+                                <span class="value">{{ product.price }}</span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">商品描述</div>
+                            <div class="detail-content">{{ product.description || '暂无描述' }}</div>
+                        </div>
+                        <div class="action-buttons">
+                            <el-button type="warning" size="large" icon="el-icon-shopping-cart-2" @click="addToCart">
+                                加入购物车
+                            </el-button>
+                        </div>
+                        <div class="extra-info">
+                            <div class="info-row"><i class="el-icon-box"></i> <span>正品保障</span></div>
+                            <div class="info-row"><i class="el-icon-truck"></i> <span>默认包邮</span></div>
+                            <div class="info-row"><i class="el-icon-refresh-left"></i> <span>7天无理由退换</span></div>
+                        </div>
+                    </div>
+                </el-col>
+            </el-row>
+
+            <!-- 加载中 -->
+            <div v-if="loading" style="text-align:center; padding:100px;">
+                <i class="el-icon-loading" style="font-size:40px; color:#2c5f2d;"></i>
+                <p>加载中...</p>
+            </div>
+        </el-card>
+
+        <!-- 评价区域 -->
+        <el-card shadow="hover" class="review-section" ref="reviewSection">
+            <div slot="header" class="review-header">
+                <h3>商品评价</h3>
+                <span class="review-count">(共{{ reviewTotal }}条评价)</span>
+            </div>
+
+            <div v-if="!reviewLoading && reviewList.length > 0" class="review-list">
+                <div v-for="review in reviewList" :key="review.id" class="review-item">
+                    <div class="review-item-header">
+                        <div class="user-info">
+                            <img :src="review.userAvatar || 'https://img1.baidu.com/it/u=1537776144,3012351076&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500'"
+                                 :alt="review.userNickname" class="user-avatar">
+                            <div class="user-details">
+                                <div class="user-nickname">{{ review.userNickname || '匿名用户' }}</div>
+                                <div class="review-date">{{ formatDate(review.createTime) }}</div>
+                            </div>
+                        </div>
+                        <el-rate v-model="review.rating" disabled show-score text-color="#ff9900"
+                                 score-template="{value}分"></el-rate>
+                    </div>
+                    <div class="review-content">{{ review.content }}</div>
+                </div>
+            </div>
+
+            <div v-if="!reviewLoading && reviewList.length === 0" style="text-align:center; padding:60px;">
+                <i class="el-icon-chat-dot-round" style="font-size:60px; color:#dcdfe6;"></i>
+                <p>暂无评价，快来成为第一个评价的用户吧～</p>
+            </div>
+
+            <div v-if="reviewLoading" style="text-align:center; padding:50px;">
+                <i class="el-icon-loading" style="font-size:40px; color:#2c5f2d;"></i>
+                <span>加载评价中...</span>
+            </div>
+
+            <div v-if="reviewTotal > reviewSize" class="review-pagination" style="text-align:center; margin-top:30px;">
+                <el-pagination
+                        background
+                        layout="prev, pager, next"
+                        :total="reviewTotal"
+                        :page-size="reviewSize"
+                        :current-page="reviewPage"
+                        @current-change="handleReviewPageChange"
+                ></el-pagination>
+            </div>
+        </el-card>
+
+        <!-- 图片预览弹窗 -->
+        <el-dialog
+                :visible.sync="showImageDialog"
+                width="80%"
+                top="5vh"
+                custom-class="image-dialog"
+                :show-close="true"
+                @close="closeImageDialog"
+        >
+            <div style="position:relative; min-height:500px; display:flex; align-items:center; justify-content:center;">
+                <img :src="currentDialogImage" :alt="product ? product.name : ''"
+                     style="max-width:100%; max-height:70vh; object-fit:contain;">
+                <div v-if="imageList.length > 1"
+                     style="position:absolute; left:20px; top:50%; transform:translateY(-50%); width:50px; height:50px; background:rgba(0,0,0,0.5); color:white; display:flex; align-items:center; justify-content:center; border-radius:50%; cursor:pointer;"
+                     @click="prevImage">
+                    <i class="el-icon-arrow-left"></i>
+                </div>
+                <div v-if="imageList.length > 1"
+                     style="position:absolute; right:20px; top:50%; transform:translateY(-50%); width:50px; height:50px; background:rgba(0,0,0,0.5); color:white; display:flex; align-items:center; justify-content:center; border-radius:50%; cursor:pointer;"
+                     @click="nextImage">
+                    <i class="el-icon-arrow-right"></i>
+                </div>
+                <div v-if="imageList.length > 1"
+                     style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.7); color:white; padding:8px 20px; border-radius:20px; font-size:14px;">
+                    {{ currentImageIndex + 1 }} / {{ imageList.length }}
+                </div>
+            </div>
+        </el-dialog>
+
+        <!-- 加入购物车弹窗 -->
+        <el-dialog
+                title="加入购物车"
+                :visible.sync="cartDialogVisible"
+                width="400px"
+                :close-on-click-modal="false"
+        >
+            <div v-if="product" style="padding:20px 0;">
+                <div style="display:flex; align-items:center; gap:15px; margin-bottom:30px; padding:15px; background:#f5f7fa; border-radius:8px;">
+                    <img :src="mainImage" :alt="product.name"
+                         style="width:80px; height:80px; border-radius:8px; object-fit:cover;">
+                    <div style="font-size:15px; font-weight:600; color:#303133;">{{ product.name }}</div>
+                </div>
+                <el-form label-width="80px">
+                    <el-form-item label="购买数量">
+                        <el-input-number v-model="cartQuantity" :min="1" :max="999"
+                                         controls-position="right"></el-input-number>
+                    </el-form-item>
+                </el-form>
+            </div>
+            <div slot="footer">
+                <el-button @click="cartDialogVisible = false">取消</el-button>
+                <el-button type="primary" @click="confirmAddToCart">确定</el-button>
+            </div>
+        </el-dialog>
+    </div>
+</div>
+
+<script>
+
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                systemName: '伴侣宠物之家',
+                currentPath: '/html/product-detail.html',
+                userInfo: JSON.parse(localStorage.getItem('userInfo')) || null,
+                // 获取token
+                authToken: localStorage.getItem('authToken'),
+                dropdownVisible: false,
+                defaultAvatar: 'https://img1.baidu.com/it/u=2531584226,2194794184&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500',
+
+                loading: true,
+                product: null,
+                imageList: [],
+                mainImage: '',
+                // 放大镜
+                showMagnifier: false,
+                magnifierX: 0,
+                magnifierY: 0,
+                imageX: 0,
+                imageY: 0,
+                // 图片弹窗
+                showImageDialog: false,
+                currentDialogImage: '',
+                currentImageIndex: 0,
+                // 购物车
+                cartDialogVisible: false,
+                cartQuantity: 1,
+                // 评价
+                reviewList: [],
+                reviewTotal: 0,
+                reviewPage: 1,
+                reviewSize: 5,
+                reviewLoading: false
+            };
+        },
+        computed: {
+            magnifierStyle() {
+                return {
+                    left: this.magnifierX + 'px',
+                    top: this.magnifierY + 'px'
+                };
+            },
+            magnifiedStyle() {
+                return {
+                    backgroundImage: `url(${this.mainImage})`,
+                    backgroundPosition: `${this.imageX}% ${this.imageY}%`,
+                    backgroundSize: '250%'
+                };
+            }
+        },
+        created() {
+            this.loadProductDetail();//加载商品详情信息
+            this.loadReviewList();//加载商品对应评论列表
+        },
+        methods: {
+            // 从 URL 获取 id
+            getProductId() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get('id') || '1'; // 默认 id=1
+            },
+
+            // 加载商品详情
+             loadProductDetail() {
+                this.loading = true;
+                setTimeout(async() => {
+                    const url = "http://localhost:18001/api/product/findById?pid="
+                    +this.getProductId();
+                    const response = await fetch(url,{
+                        method:"POST",
+                        headers:{
+                            "content-type":"application/json",
+                            "Authorization":this.authToken
+                        }
+                    })
+                    const data = await response.json();
+                    if(data.success){
+                        this.product = data.data.productInfo;
+                        this.loading = false;
+                        //处理商品图片
+                        this.imageList = data.data.productInfo.images.split(",");
+                        this.mainImage = this.imageList[0];
+                        console.log(this.imageList);
+                    }
+                }, 500);
+            },
+
+            initImages() {
+                if (this.product.images) {
+                    this.imageList = this.product.images.split(',').filter(img => img.trim());
+                }
+                if (this.imageList.length === 0) {
+                    this.imageList = ['https://img1.baidu.com/it/u=2531584226,2194794184&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500'];
+                }
+                this.mainImage = this.imageList[0];
+                this.currentDialogImage = this.mainImage;
+            },
+
+            selectImage(image) {
+                this.mainImage = image;
+                this.currentDialogImage = image;
+                this.currentImageIndex = this.imageList.indexOf(image);
+            },
+
+            handleMouseMove(event) {
+                if (window.innerWidth <= 992) return; // 移动端不启用放大镜
+                const container = event.currentTarget;
+                const rect = container.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+                const magnifierSize = 150;
+                this.magnifierX = Math.max(0, Math.min(x - magnifierSize / 2, rect.width - magnifierSize));
+                this.magnifierY = Math.max(0, Math.min(y - magnifierSize / 2, rect.height - magnifierSize));
+                this.imageX = (x / rect.width) * 100;
+                this.imageY = (y / rect.height) * 100;
+                this.showMagnifier = true;
+            },
+
+            handleMouseLeave() {
+                this.showMagnifier = false;
+            },
+
+            openImageDialog(image) {
+                this.currentDialogImage = image;
+                this.currentImageIndex = this.imageList.indexOf(image);
+                this.showImageDialog = true;
+            },
+
+            closeImageDialog() {
+                this.showImageDialog = false;
+            },
+
+            prevImage() {
+                if (this.currentImageIndex > 0) {
+                    this.currentImageIndex--;
+                } else {
+                    this.currentImageIndex = this.imageList.length - 1;
+                }
+                this.currentDialogImage = this.imageList[this.currentImageIndex];
+                this.mainImage = this.currentDialogImage;
+            },
+
+            nextImage() {
+                if (this.currentImageIndex < this.imageList.length - 1) {
+                    this.currentImageIndex++;
+                } else {
+                    this.currentImageIndex = 0;
+                }
+                this.currentDialogImage = this.imageList[this.currentImageIndex];
+                this.mainImage = this.currentDialogImage;
+            },
+
+            goBack() {
+                window.history.back(); // 或 window.location.href = '/user/product-list';
+            },
+
+//添加购物车
+            async addToCart(product) {
+                const params = {
+                    productId:product.id,
+                    userId:this.userInfo.id,
+                    quantity:1 //默认添加一件商品
+                }
+                try {
+                    const url = "http://localhost:18001/api/cart/addToCart";
+                    const response = await fetch(url,{
+                        method:"POST",
+                        headers:{
+                            "content-type":"application/json",
+                            "Authorization":this.authToken
+                        },
+                        body:JSON.stringify(params)
+                    })
+                    const data = await response.json();
+                    if(data.success){
+                        this.$message.success(data.data)
+                    }
+                }catch (err){
+                    this.$message.error(err.data)
+                }
+
+            },
+
+            // 加入购物车确认
+            confirmAddToCart() {
+                // 模拟加入购物车
+                this.$message.success('已加入购物车');
+                this.cartDialogVisible = false;
+            },
+
+            // 加载评论列表
+            loadReviewList() {
+                this.reviewLoading = true;
+                setTimeout(async() => {
+                    //构建分页查询评论的参数
+                    const params = {page : this.reviewPage , size:this.reviewSize};
+                    const url = "http://localhost:18001/api/review/findByPid?pid="+this.getProductId();
+                    const response = await fetch(url,{
+                        method:"POST",
+                        headers:{
+                            "content-type":"application/json",
+                            "Authorization": this.authToken
+                        },
+                        body:JSON.stringify(params)
+                    })
+                    const data = await response.json();
+                    if(data.success){
+                        this.reviewTotal = data.data.total;
+                        this.reviewList = data.data.reviewList;
+                        this.reviewLoading  = false;
+                    }
+
+                }, 300);
+            },
+
+            // 评论分页切换
+            handleReviewPageChange(page) {
+                this.reviewPage = page;
+                // 实际应重新请求分页数据
+                this.loadReviewList();
+            },
+
+            // 格式化日期为YYYY-MM-DD
+            formatDate(dateStr) {
+                if (!dateStr) return '';
+                const d = new Date(dateStr);
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            },
+
+            // 跳转页面
+            goTo(path) {
+                window.location.href = path;
+            },
+
+            // 跳转个人资料页面
+            goToProfile() {
+                window.location.href = '/html/user-profile.html';
+            },
+
+            logout() {
+                localStorage.removeItem('userInfo');
+                localStorage.removeItem("authToken");
+                this.userInfo = null;
+                window.location.href = '/index.html';
+            },
+
+            toggleDropdown() {
+                this.dropdownVisible = !this.dropdownVisible;
+            }
+        }
+    });
+</script>
+
+<style>
+    /* 弹窗背景 */
+    .image-dialog {
+        background: rgba(0, 0, 0, 0.95);
+    }
+
+    .image-dialog .el-dialog__header {
+        display: none;
+    }
+
+    .image-dialog .el-dialog__body {
+        padding: 20px;
+    }
+</style>
+
+</body>
+</html>

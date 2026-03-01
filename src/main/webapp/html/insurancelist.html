@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>宠物保险 - 伴侣宠物之家</title>
+
+  <!-- 引入 Element UI 样式 -->
+  <link rel="stylesheet" href="/css/index.css">
+
+  <!-- 引入 Vue 和 Element UI JS -->
+  <script src="/js/vue.min.js"></script>
+  <script src="/js/index.js"></script>
+  <!--引入检查登录状态-->
+  <script src="/js/check.js"></script>
+
+  <!-- 复用你的 product.css 样式 -->
+  <link rel="stylesheet" href="/css/insurancelist.css">
+</head>
+<body>
+<div id="app">
+  <!-- 顶部导航栏 -->
+  <div class="top-navbar">
+    <div class="navbar-content">
+      <div class="logo">
+        <span class="pet-icon">🐾</span>
+        <span class="logo-text">{{ systemName }}</span>
+      </div>
+
+      <div class="nav-menu">
+        <div class="nav-item" :class="{ active: currentPath === '/user/home' }" @click="goTo('/html/userhome.html')">
+          <i class="el-icon-s-home"></i>
+          <span>首页</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath.startsWith('/user/product') }"
+             @click="goTo('/html/productlist.html')">
+          <i class="el-icon-shopping-bag-2"></i>
+          <span>商品一览</span>
+        </div>
+        <div class="nav-item active" :class="{ active: currentPath.startsWith('/user/insurance') }"
+             @click="goTo('/html/insurancelist.html')">
+          <i class="el-icon-s-home"></i>
+          <span>宠物保险</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath === '/user/policy-list' }"
+             @click="goTo('/html/policylist.html')">
+          <i class="el-icon-document-checked"></i>
+          <span>我的保单</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath === '/user/claim-list' }"
+             @click="goTo('/html/claimlist.html')">
+          <i class="el-icon-warning-outline"></i>
+          <span>申保记录</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath.startsWith('/user/hospital') }"
+             @click="goTo('/html/hospitallist.html')">
+          <i class="el-icon-office-building"></i>
+          <span>宠物医院</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath === '/user/appointment-list' }"
+             @click="goTo('/html/appointmentlist.html')">
+          <i class="el-icon-s-order"></i>
+          <span>预约记录</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath.startsWith('/user/breeding') }"
+             @click="goTo('/html/breedinglist.html')">
+          <i class="el-icon-search"></i>
+          <span>寻找配种</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath.startsWith('/user/foster') }"
+             @click="goTo('/html/fosterlist.html')">
+          <i class="el-icon-house"></i>
+          <span>宠物寄养</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath.startsWith('/user/adoption') }"
+             @click="goTo('/html/adoptionlist.html')">
+          <i class="el-icon-present"></i>
+          <span>宠物领养</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath.startsWith('/user/forum') }"
+             @click="goTo('/html/forumlist.html')">
+          <i class="el-icon-chat-dot-square"></i>
+          <span>论坛</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath === '/user/cart' }"
+             @click="goTo('/html/usercart.html')">
+          <i class="el-icon-shopping-cart-2"></i>
+          <span>购物车</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath === '/user/order-list' }"
+             @click="goTo('/html/orderlist.html')">
+          <i class="el-icon-s-order"></i>
+          <span>我的订单</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath === '/user/review-list' }"
+             @click="goTo('/html/reviewlist.html')">
+          <i class="el-icon-chat-line-square"></i>
+          <span>我的评价</span>
+        </div>
+      </div>
+
+      <div class="user-info" v-if="userInfo" @click="toggleDropdown">
+        <img :src="userInfo.avatar || defaultAvatar" class="user-avatar" />
+        <span class="username">{{ userInfo.nickname }}</span>
+        <i class="el-icon-arrow-down"></i>
+
+        <div class="user-dropdown" :class="{ show: dropdownVisible }">
+          <div class="dropdown-item" @click.stop="goToProfile">个人资料</div>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item" @click.stop="logout">退出登录</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 保险列表内容 -->
+  <div class="insurance-list-container">
+    <!-- 搜索区域 -->
+    <div class="search-section">
+      <div class="search-form">
+        <!-- 保险名称 -->
+        <div class="search-item">
+          <label>保险名称</label>
+          <input v-model="searchForm.name" type="text" placeholder="请输入保险名称" />
+        </div>
+
+        <!-- 价格范围 -->
+        <div class="search-item">
+          <label>价格范围</label>
+          <div class="price-range">
+            <input v-model.number="searchForm.minPrice" type="number" placeholder="最低价" min="0" step="0.01" />
+            <span class="range-separator">-</span>
+            <input v-model.number="searchForm.maxPrice" type="number" placeholder="最高价" min="0" step="0.01" />
+          </div>
+        </div>
+
+        <!-- 按钮 -->
+        <div class="search-buttons">
+          <button class="btn-primary" @click="handleSearch">搜索</button>
+          <button class="btn-default" @click="handleReset">重置</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 保险卡片网格 -->
+    <div class="insurance-grid">
+      <div v-for="insurance in insuranceList" :key="insurance.id" class="insurance-card" @click="viewDetail(insurance.id)">
+        <div class="insurance-header">
+          <div class="insurance-icon">
+            <i class="el-icon-s-home"></i>
+          </div>
+          <div class="insurance-badge">宠物保险</div>
+        </div>
+        <div class="insurance-info">
+          <div class="insurance-name" :title="insurance.name">{{ insurance.name }}</div>
+          <div class="insurance-coverage" v-if="insurance.coverage">
+            <i class="el-icon-circle-check"></i>
+            <span>{{ truncateText(insurance.coverage, 50) }}</span>
+          </div>
+          <div class="insurance-limit" v-if="insurance.claimLimit">
+            <i class="el-icon-document-checked"></i>
+            <span>{{ insurance.claimLimit }}</span>
+          </div>
+          <div class="insurance-footer">
+            <div class="insurance-price">
+              <span class="price-symbol">¥</span>
+              <span class="price-value">{{ insurance.price }}</span>
+              <span class="price-unit">/年</span>
+            </div>
+            <el-button type="primary" size="small" icon="el-icon-view" @click.stop="viewDetail(insurance.id)">
+              查看详情
+            </el-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 空状态 -->
+      <el-empty v-if="insuranceList.length === 0" description="暂无保险产品"></el-empty>
+    </div>
+
+    <!-- 分页 -->
+    <div class="pagination-section" v-if="total > 0">
+      <el-pagination
+              background
+              @current-change="handlePageChange"
+              :current-page="currentPage"
+              :page-size="pageSize"
+              layout="total, prev, pager, next, jumper"
+              :total="total">
+      </el-pagination>
+    </div>
+  </div>
+</div>
+
+<script>
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+        systemName: '伴侣宠物之家',
+        currentPath: '/user/insurance-list',
+        userInfo: JSON.parse(localStorage.getItem('userInfo')) || null,
+        // 获取token
+        authToken: localStorage.getItem('authToken'),
+        dropdownVisible: false,
+        defaultAvatar: 'https://img1.baidu.com/it/u=2531584226,2194794184&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500',
+        searchForm: {
+          name: '',
+          minPrice: null,
+          maxPrice: null
+        },
+        insuranceList: [],
+        currentPage: 1,
+        pageSize: 6,
+        total: 0,
+        loading: false
+      };
+    },
+    created() {
+      this.loadInsurances();
+    },
+    methods: {
+      async loadInsurances() {
+        this.loading = true;
+        try {
+          const params = { page: this.currentPage, size: this.pageSize };
+          if (this.searchForm.name) params.name = this.searchForm.name;
+          if (this.searchForm.minPrice != null && this.searchForm.minPrice > 0) {
+            params.minPrice = this.searchForm.minPrice;
+          }
+          if (this.searchForm.maxPrice != null && this.searchForm.maxPrice > 0) {
+            params.maxPrice = this.searchForm.maxPrice;
+          }
+
+         // const queryString = new URLSearchParams(params).toString();
+          // 发送POST请求
+          const response = await fetch(`/api/insurance/findByPage`,{
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + this.authToken
+            },
+            body: JSON.stringify(params)
+          });
+          const result = await response.json();
+          if (result.success) {
+            this.insuranceList = result.data.insuranceList || [];
+            this.total = result.data.total || 0;
+          } else {
+            this.$message.error(result.message || '加载保险列表失败');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          this.$message.error('网络错误，请稍后重试');
+        } finally {
+          this.loading = false;
+        }
+      },
+
+      handleSearch() {
+        this.currentPage = 1;
+        this.loadInsurances();
+      },
+
+      handleReset() {
+        this.searchForm = { name: '', minPrice: null, maxPrice: null };
+        this.handleSearch();
+      },
+
+      handlePageChange(page) {
+        this.currentPage = page;
+        this.loadInsurances();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      },
+
+      truncateText(text, length) {
+        if (!text) return '';
+        if (text.length <= length) return text;
+        return text.substring(0, length) + '...';
+      },
+
+      viewDetail(id) {
+        window.location.href = `/html/insuracne-detail.html?id=${id}`;
+      },
+
+      goTo(path) {
+        window.location.href = path;
+      },
+
+      goToProfile() {
+        window.location.href = '/html/user-profile.html';
+      },
+
+      logout() {
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem("authToken");
+        this.userInfo = null;
+        window.location.href = '/index.html';
+      },
+
+      toggleDropdown() {
+        this.dropdownVisible = !this.dropdownVisible;
+      }
+    }
+  });
+</script>
+</body>
+</html>

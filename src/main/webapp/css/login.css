@@ -1,0 +1,196 @@
+/* login.css */
+.login-container {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #2c5f2d 0%, #97bc62 100%);
+    overflow: hidden;
+    padding: 30px 0;
+}
+
+.login-background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    /* 可添加背景装饰（如爪印），此处省略 */
+}
+
+.login-box {
+    position: relative;
+    width: 420px;
+    background: white;
+    border-radius: 16px;
+    padding: 40px 50px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.login-header h2 {
+    color: #2c5f2d;
+    font-size: 26px;
+    font-weight: 600;
+    margin: 10px 0;
+}
+
+.subtitle {
+    color: #97bc62;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.login-form {
+    margin-top: 20px;
+}
+
+.form-item {
+    margin-bottom: 20px;
+}
+
+.form-item input {
+    width: 100%;
+    height: 45px;
+    padding: 0 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s;
+    box-sizing: border-box;
+}
+
+.form-item input:focus {
+    outline: none;
+    border-color: #97bc62;
+    box-shadow: 0 0 0 2px rgba(151, 188, 98, 0.1);
+}
+
+/* 角色选择器 */
+.role-selector {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.role-option {
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.role-option.active {
+    background: #97bc62;
+    color: white;
+    border-color: #97bc62;
+}
+
+.role-option:hover:not(.active) {
+    background: #eef5e9;
+}
+
+/* 验证码区域 */
+.captcha-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.captcha-image {
+    width: 38%;
+    height: 45px;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s;
+}
+
+.captcha-image:hover {
+    border-color: #97bc62;
+    box-shadow: 0 0 0 2px rgba(151, 188, 98, 0.1);
+}
+
+.captcha-image img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.refresh-hint {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    font-size: 10px;
+    text-align: center;
+    padding: 2px 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.captcha-image:hover .refresh-hint {
+    opacity: 1;
+}
+
+/* 登录按钮 */
+.login-button {
+    width: 100%;
+    height: 45px;
+    background: linear-gradient(135deg, #2c5f2d 0%, #97bc62 100%);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.login-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(44, 95, 45, 0.3);
+}
+
+.login-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* 注册链接 */
+.register-link {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    margin-top: 15px;
+}
+
+.register-link a {
+    color: #2c5f2d;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.register-link a:hover {
+    color: #97bc62;
+    text-decoration: underline;
+}

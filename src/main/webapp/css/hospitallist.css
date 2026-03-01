@@ -1,0 +1,369 @@
+/* ========== 全局样式 ========== */
+body {
+    font-family: 'Microsoft YaHei', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f7fa;
+}
+
+/* ========== 顶部导航栏 ========== */
+.top-navbar {
+    background: linear-gradient(135deg, #2c5f2d 0%, #97bc62 100%);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    height: 70px;
+}
+.navbar-content {
+    width: 100%;
+    max-width: 1400px;
+    padding: 0 10px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 auto;
+}
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    flex-shrink: 0;
+}
+.pet-icon {
+    font-size: 28px;
+}
+.logo-text {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+/* ========= 导航菜单 ========= */
+.nav-menu {
+    display: flex;
+    gap: 6px;
+    flex: 1;
+    justify-content: center;
+    max-width: 1200px;
+    overflow-x: hidden;
+    padding: 0 10px;
+    white-space: nowrap;
+}
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 12px;
+    white-space: nowrap;
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.nav-item:hover,
+.nav-item.active {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+.nav-item i {
+    font-size: 14px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    flex-shrink: 0;
+    position: relative;
+}
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+.username {
+    font-size: 15px;
+    font-weight: 500;
+}
+.el-icon-arrow-down {
+    font-size: 12px;
+    margin-left: 4px;
+}
+
+/* 下拉菜单 */
+.user-dropdown {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background: white;
+    border: 1px solid #e4e7ed;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    min-width: 120px;
+    display: none;
+}
+.user-dropdown.show {
+    display: block;
+}
+.dropdown-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #606266;
+}
+.dropdown-item:hover {
+    background: #f5f7fa;
+}
+.dropdown-divider {
+    height: 1px;
+    background: #e4e7ed;
+    margin: 4px 0;
+}
+
+/* ========== 医院列表容器 ========== */
+.hospital-list-container {
+    margin-top: 70px;
+    padding: 20px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    min-height: calc(100vh - 130px);
+}
+
+/* 搜索筛选区域 */
+.search-section {
+    margin-bottom: 20px;
+}
+.search-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+}
+.search-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.search-item label {
+    font-size: 14px;
+    color: #606266;
+    font-weight: 500;
+}
+.search-item input {
+    width: 200px;
+    padding: 10px 12px;
+    border: 1px solid #dcdfe6;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+}
+.search-buttons {
+    display: flex;
+    gap: 10px;
+}
+.search-buttons button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+}
+.search-buttons .btn-primary {
+    background: linear-gradient(135deg, #2c5f2d 0%, #97bc62 100%);
+    color: white;
+}
+.search-buttons .btn-default {
+    background: #f5f7fa;
+    color: #606266;
+    border: 1px solid #dcdfe6;
+}
+
+/* 医院卡片 */
+.hospital-list {
+    min-height: 400px;
+}
+.hospital-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s;
+    display: flex;
+    height: 280px;
+}
+.hospital-card:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+.hospital-image {
+    width: 400px;
+    height: 280px;
+    flex-shrink: 0;
+    overflow: hidden;
+    cursor: pointer;
+}
+.hospital-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+.hospital-card:hover .hospital-image img {
+    transform: scale(1.05);
+}
+.hospital-info {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+.hospital-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.hospital-name {
+    font-size: 20px;
+    font-weight: 600;
+    color: #2c5f2d;
+    margin: 0;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+.hospital-name:hover {
+    color: #97bc62;
+}
+.hospital-phone {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #606266;
+    font-size: 14px;
+}
+.hospital-phone i {
+    color: #2c5f2d;
+}
+.hospital-introduction {
+    font-size: 14px;
+    color: #606266;
+    line-height: 1.6;
+    margin-bottom: 12px;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+.hospital-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.hospital-footer {
+    margin-top: auto;
+    padding-top: 15px;
+    border-top: 1px solid #e4e7ed;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+.hospital-meta {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    color: #909399;
+}
+.meta-item i {
+    color: #2c5f2d;
+}
+.hospital-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* 分页 */
+.pagination-section {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+/* 预约弹窗样式（简化） */
+.selected-hospital-info {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: linear-gradient(135deg, #2c5f2d 0%, #97bc62 100%);
+    border-radius: 8px;
+}
+.hospital-name-tag {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+}
+.filter-buttons {
+    display: flex;
+    gap: 10px;
+}
+.filter-btn {
+    padding: 8px 20px;
+    border: 1px solid #dcdfe6;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #606266;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: white;
+}
+.filter-btn:hover {
+    color: #2c5f2d;
+    border-color: #2c5f2d;
+    background: #f0f9f0;
+}
+.filter-btn.active {
+    color: white;
+    background: linear-gradient(135deg, #2c5f2d 0%, #97bc62 100%);
+    border-color: #2c5f2d;
+    font-weight: 600;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .search-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .search-item input {
+        width: 100%;
+    }
+    .hospital-card {
+        flex-direction: column;
+        height: auto;
+    }
+    .hospital-image {
+        width: 100%;
+        height: 200px;
+    }
+}

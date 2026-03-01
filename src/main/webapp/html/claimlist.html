@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>申保记录 - 伴侣宠物之家</title>
+
+  <!-- 引入 Element UI 样式 -->
+  <link rel="stylesheet" href="/css/index.css">
+
+  <!-- 引入 Vue 和 Element UI JS -->
+  <script src="/js/vue.min.js"></script>
+  <script src="/js/index.js"></script>
+  <!--引入检查登录状态-->
+  <script src="/js/check.js"></script>
+
+  <link rel="stylesheet" href="/css/claimlist.css" />
+</head>
+<body>
+<div id="app">
+  <!-- 顶部导航栏 -->
+  <div class="top-navbar">
+    <div class="navbar-content">
+      <div class="logo">
+        <span class="pet-icon">🐾</span>
+        <span class="logo-text">{{ systemName }}</span>
+      </div>
+
+      <div class="nav-menu">
+        <div class="nav-item" @click="goTo('/user/home')">
+          <i class="el-icon-s-home"></i>
+          <span>首页</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/productlist.html')">
+          <i class="el-icon-shopping-bag-2"></i>
+          <span>商品一览</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/insurancelist.html')">
+          <i class="el-icon-s-home"></i>
+          <span>宠物保险</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/policylist.html')">
+          <i class="el-icon-document-checked"></i>
+          <span>我的保单</span>
+        </div>
+        <div class="nav-item active" @click="goTo('/html/claimlist.html')">
+          <i class="el-icon-warning-outline"></i>
+          <span>申保记录</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/hospitallist.html')">
+          <i class="el-icon-office-building"></i>
+          <span>宠物医院</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/appointmentlist.html')">
+          <i class="el-icon-s-order"></i>
+          <span>预约记录</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/breedinglist.html')">
+          <i class="el-icon-search"></i>
+          <span>寻找配种</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/fosterlist.html')">
+          <i class="el-icon-house"></i>
+          <span>宠物寄养</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/adoptionlist.html')">
+          <i class="el-icon-present"></i>
+          <span>宠物领养</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/forumlist.html')">
+          <i class="el-icon-chat-dot-square"></i>
+          <span>论坛</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/usercart.html')">
+          <i class="el-icon-shopping-cart-2"></i>
+          <span>购物车</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/orderlist.html')">
+          <i class="el-icon-s-order"></i>
+          <span>我的订单</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/reviewlist.html')">
+          <i class="el-icon-chat-line-square"></i>
+          <span>我的评价</span>
+        </div>
+      </div>
+
+      <div class="user-info" v-if="userInfo" @click="toggleDropdown">
+        <img :src="userInfo.avatar || defaultAvatar" class="user-avatar" />
+        <span class="username">{{ userInfo.nickname }}</span>
+        <i class="el-icon-arrow-down"></i>
+
+        <div class="user-dropdown" :class="{ show: dropdownVisible }">
+          <div class="dropdown-item" @click.stop="goToProfile">个人资料</div>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item" @click.stop="logout">退出登录</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 申保记录内容 -->
+  <div class="claim-list-container">
+    <div class="page-header">
+      <h2>申保记录</h2>
+      <p>查看您的所有理赔申请记录</p>
+    </div>
+
+    <!-- 搜索筛选区域 -->
+    <div class="search-section">
+      <el-card shadow="hover">
+        <div class="filter-section">
+          <label>申请状态：</label>
+          <div class="filter-buttons">
+            <div
+                    class="filter-btn"
+                    :class="{ active: searchStatus === '' }"
+                    @click="filterByStatus('')">
+              全部
+            </div>
+            <div
+                    class="filter-btn"
+                    :class="{ active: searchStatus === '待审核' }"
+                    @click="filterByStatus('待审核')">
+              待审核
+            </div>
+            <div
+                    class="filter-btn"
+                    :class="{ active: searchStatus === '审核通过' }"
+                    @click="filterByStatus('审核通过')">
+              审核通过
+            </div>
+            <div
+                    class="filter-btn"
+                    :class="{ active: searchStatus === '审核拒绝' }"
+                    @click="filterByStatus('审核拒绝')">
+              审核拒绝
+            </div>
+            <div
+                    class="filter-btn"
+                    :class="{ active: searchStatus === '已打款' }"
+                    @click="filterByStatus('已打款')">
+              已打款
+            </div>
+          </div>
+        </div>
+      </el-card>
+    </div>
+
+    <!-- 申保记录列表 -->
+    <div class="claim-list">
+      <el-card
+              v-for="claim in claimList"
+              :key="claim.id"
+              shadow="hover"
+              class="claim-item">
+        <div class="claim-header">
+          <div class="claim-info">
+            <div class="claim-no">理赔编号：{{ claim.claimNo }}</div>
+            <el-tag :type="getStatusType(claim.status)" size="medium">
+              {{ claim.status }}
+            </el-tag>
+          </div>
+          <div class="claim-time">{{ formatDate(claim.createTime) }}</div>
+        </div>
+
+        <el-row :gutter="30">
+          <el-col :xs="24" :sm="24" :md="16" :lg="16">
+            <div class="claim-detail">
+              <div class="detail-row">
+                <span class="label">保险名称：</span>
+                <span class="value">{{ claim.insuranceName }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">宠物信息：</span>
+                <span class="value">{{ claim.petName }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">申请原因：</span>
+                <span class="value">{{ claim.reason }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">情况描述：</span>
+                <span class="value description-text">{{ claim.description }}</span>
+              </div>
+              <!-- 理赔金额 -->
+              <div class="detail-row" v-if="claim.claimAmount">
+                <span class="label">理赔金额：</span>
+                <span class="value amount">¥{{ claim.claimAmount }}</span>
+              </div>
+              <!-- 拒绝原因 -->
+              <div class="detail-row reject-row" v-if="claim.status === '审核拒绝' && claim.rejectReason">
+                <span class="label">拒绝原因：</span>
+                <span class="value">{{ claim.rejectReason }}</span>
+              </div>
+              <!-- 管理员备注 -->
+              <div class="detail-row" v-if="claim.adminRemark">
+                <span class="label">备注信息：</span>
+                <span class="value">{{ claim.adminRemark }}</span>
+              </div>
+            </div>
+          </el-col>
+          <el-col :xs="24" :sm="24" :md="8" :lg="8">
+            <div class="evidence-section" v-if="claim.evidenceImages">
+              <div class="evidence-label">佐证图片：</div>
+              <div class="evidence-images">
+                <img
+                        v-for="(image, index) in getImageList(claim.evidenceImages)"
+                        :key="index"
+                        :src="image"
+                        class="evidence-image"
+                        @click="previewImage(image)"
+                />
+              </div>
+            </div>
+          </el-col>
+        </el-row>
+      </el-card>
+
+      <!-- 空状态 -->
+      <el-empty v-if="claimList.length === 0" description="暂无申保记录"></el-empty>
+    </div>
+
+    <!-- 分页 -->
+    <div class="pagination-section" v-if="total > 0">
+      <el-pagination
+              background
+              @current-change="handlePageChange"
+              :current-page="currentPage"
+              :page-size="pageSize"
+              layout="total, prev, pager, next, jumper"
+              :total="total">
+      </el-pagination>
+    </div>
+  </div>
+</div>
+
+<script>
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+        systemName: '伴侣宠物之家',
+        userInfo: JSON.parse(localStorage.getItem('userInfo')) || null,
+        token: localStorage.getItem('authToken') || '',
+        dropdownVisible: false,
+        defaultAvatar: 'https://img1.baidu.com/it/u=2531584226,2194794184&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500',
+
+        claimList: [],
+        currentPage: 1,
+        pageSize: 10,
+        total: 0,
+        loading: false,
+        searchStatus: ''
+      };
+    },
+    created() {
+      this.loadClaimList();
+    },
+    methods: {
+      async loadClaimList() {
+        if (!this.userInfo) {
+          this.$notify.warning({ title: '提示', message: '请先登录', duration: 2000 });
+          setTimeout(() => window.location.href = '/index.html', 1000);
+          return;
+        }
+
+        const params = {
+          userId: this.userInfo.id,
+          page: this.currentPage,
+          size: this.pageSize
+        };
+
+        if (this.searchStatus) {
+           params.status =  this.searchStatus;
+        }
+
+        try {
+          const res = await fetch(`/api/insurance/claimListPage`, {
+            method: 'POST',
+            body: JSON.stringify(params),
+            headers: {
+              'Authorization': `Bearer ${this.token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          const data = await res.json();
+          if (data.success) {
+            this.claimList = data.data.claimList || [];
+            this.total = data.data.total || 0;
+          } else {
+            this.$message.error(data.message || '加载失败');
+          }
+        } catch (err) {
+          this.$message.error('网络错误，请稍后重试');
+        }
+      },
+
+      filterByStatus(status) {
+        this.searchStatus = status;
+        this.currentPage = 1;
+        this.loadClaimList();
+      },
+
+      handlePageChange(page) {
+        this.currentPage = page;
+        this.loadClaimList();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      },
+
+      formatDate(date) {
+        if (!date) return '';
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const hour = String(d.getHours()).padStart(2, '0');
+        const minute = String(d.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hour}:${minute}`;
+      },
+
+      getImageList(images) {
+        if (!images) return [];
+        return images.split(',').filter(img => img.trim());
+      },
+
+      getStatusType(status) {
+        const typeMap = {
+          '待审核': 'warning',
+          '审核通过': 'success',
+          '审核拒绝': 'danger',
+          '已打款': 'success'
+        };
+        return typeMap[status] || 'info';
+      },
+
+      previewImage(url) {
+        // 使用 Element UI 的图片预览（简化版）
+        const img = new Image();
+        img.src = url;
+        img.style.maxWidth = '90vw';
+        img.style.maxHeight = '90vh';
+        const win = window.open('', '_blank');
+        win.document.write(img.outerHTML);
+      },
+
+      goTo(path) {
+        window.location.href = path;
+      },
+      goToProfile() {
+        window.location.href = '/html/user-profile.html';
+      },
+      logout() {
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem("authToken");
+        this.userInfo = null;
+        window.location.href = '/index.html';
+      },
+      toggleDropdown() {
+        this.dropdownVisible = !this.dropdownVisible;
+      }
+    }
+  });
+</script>
+</body>
+</html>

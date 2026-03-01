@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>配种详情 - 伴侣宠物之家🐾</title>
+
+  <!-- 引入 Element UI 样式 -->
+  <link rel="stylesheet" href="/css/index.css">
+
+  <!-- 引入 Vue 和 Element UI JS -->
+  <script src="/js/vue.min.js"></script>
+  <script src="/js/index.js"></script>
+  <!--引入检查登录状态-->
+  <script src="/js/check.js"></script>
+
+  <link rel="stylesheet" href="/css/breeding-detail.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- 顶部导航栏 -->
+  <div class="top-navbar">
+    <div class="navbar-content">
+      <div class="logo">
+        <span class="pet-icon">🐾</span>
+        <span class="logo-text">{{ systemName }}</span>
+      </div>
+
+      <div class="nav-menu">
+        <div class="nav-item" @click="goTo('/html/userhome.html')">
+          <i class="el-icon-s-home"></i>
+          <span>首页</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/productlist.html')">
+          <i class="el-icon-shopping-bag-2"></i>
+          <span>商品一览</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/insurancelist.html')">
+          <i class="el-icon-s-home"></i>
+          <span>宠物保险</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/policylist.html')">
+          <i class="el-icon-document-checked"></i>
+          <span>我的保单</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/claimlist.html')">
+          <i class="el-icon-warning-outline"></i>
+          <span>申保记录</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/hospitallist.html')">
+          <i class="el-icon-office-building"></i>
+          <span>宠物医院</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/appointmentlist.html')">
+          <i class="el-icon-s-order"></i>
+          <span>预约记录</span>
+        </div>
+        <div class="nav-item active">
+          <i class="el-icon-search"></i>
+          <span>寻找配种</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/fosterlist.html')">
+          <i class="el-icon-house"></i>
+          <span>宠物寄养</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/adoptionlist.html')">
+          <i class="el-icon-present"></i>
+          <span>宠物领养</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/forumlist.html')">
+          <i class="el-icon-chat-dot-square"></i>
+          <span>论坛</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/usercart.html')">
+          <i class="el-icon-shopping-cart-2"></i>
+          <span>购物车</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/orderlist.html')">
+          <i class="el-icon-s-order"></i>
+          <span>我的订单</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/reviewlist.html')">
+          <i class="el-icon-chat-line-square"></i>
+          <span>我的评价</span>
+        </div>
+      </div>
+
+      <div class="user-info" v-if="userInfo" @click="toggleDropdown">
+        <img :src="userInfo.avatar || defaultAvatar" class="user-avatar" />
+        <span class="username">{{ userInfo.nickname }}</span>
+        <i class="el-icon-arrow-down"></i>
+
+        <div class="user-dropdown" :class="{ show: dropdownVisible }">
+          <div class="dropdown-item" @click.stop="goToProfile">个人资料</div>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item" @click.stop="logout">退出登录</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="breeding-detail-container">
+    <el-card shadow="hover">
+      <!-- 返回按钮 -->
+      <div class="back-button">
+        <el-button icon="el-icon-arrow-left" @click="goBack">返回列表</el-button>
+      </div>
+
+      <!-- 加载中 -->
+      <div v-if="loading" class="loading-container">
+        <i class="el-icon-loading"></i>
+        <span>加载中...</span>
+      </div>
+
+      <!-- 帖子详情 -->
+      <el-row :gutter="40" v-if="post && !loading">
+        <!-- 左侧：图片展示 -->
+        <el-col :xs="24" :sm="24" :md="12" :lg="12">
+          <div class="image-section">
+            <!-- 主图（带放大镜） -->
+            <div
+                    class="main-image-container"
+                    @mousemove="handleMouseMove"
+                    @mouseleave="handleMouseLeave"
+            >
+              <img :src="mainImage" :alt="post.title" class="main-image" />
+              <!-- 放大镜 -->
+              <div v-if="showMagnifier" class="magnifier" :style="magnifierStyle"></div>
+              <!-- 放大视图 -->
+              <div v-if="showMagnifier" class="magnified-view" :style="magnifiedStyle"></div>
+            </div>
+            <!-- 缩略图 -->
+            <div class="thumbnail-list" v-if="imageList.length > 1">
+              <div
+                      v-for="(image, index) in imageList"
+                      :key="index"
+                      class="thumbnail-item"
+                      :class="{ active: mainImage === image }"
+                      @click="selectImage(image)"
+              >
+                <img :src="image" :alt="`图片${index + 1}`" />
+              </div>
+            </div>
+          </div>
+        </el-col>
+
+        <!-- 右侧：帖子信息 -->
+        <el-col :xs="24" :sm="24" :md="12" :lg="12">
+          <div class="info-section">
+            <h1 class="post-title">{{ post.title }}</h1>
+            <div class="post-meta">
+              <el-tag type="success" size="medium">{{ post.petType }}</el-tag>
+              <el-tag type="warning" size="medium">{{ post.petGender }}</el-tag>
+              <el-tag type="info" size="medium">{{ post.breed }}</el-tag>
+              <el-tag :type="post.status === '寻找中' ? 'success' : 'info'" size="medium">
+                {{ post.status }}
+              </el-tag>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">宠物名称</div>
+              <div class="info-content">{{ post.petName }}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">品种</div>
+              <div class="info-content">{{ post.breed }}</div>
+            </div>
+            <div class="info-item" v-if="post.vaccineStatus">
+              <div class="info-label">疫苗情况</div>
+              <div class="info-content">{{ post.vaccineStatus }}</div>
+            </div>
+            <div class="info-item" v-if="post.breedingRequirement">
+              <div class="info-label">配种要求</div>
+              <div class="info-content">{{ post.breedingRequirement }}</div>
+            </div>
+            <div class="info-item" v-if="post.location">
+              <div class="info-label">地理位置</div>
+              <div class="info-content">
+                <i class="el-icon-location"></i> {{ post.location }}
+              </div>
+            </div>
+            <div class="info-item" v-if="post.ownerInfo">
+              <div class="info-label">主人信息</div>
+              <div class="info-content">{{ post.ownerInfo }}</div>
+            </div>
+            <div class="info-item" v-if="post.description">
+              <div class="info-label">详细描述</div>
+              <div class="info-content description">{{ post.description }}</div>
+            </div>
+
+            <!-- 发布者信息 -->
+            <div class="publisher-section">
+              <div class="publisher-header">发布者信息</div>
+              <div class="publisher-info">
+                <img
+                        :src="post.userAvatar || 'https://img1.baidu.com/it/u=1537776144,3012351076&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500'"
+                        :alt="post.userNickname"
+                        class="publisher-avatar"
+                />
+                <div class="publisher-details">
+                  <div class="publisher-nickname">{{ post.userNickname || '匿名用户' }}</div>
+                  <div class="publisher-phone" v-if="post.userPhone">
+                    <i class="el-icon-phone"></i> {{ post.userPhone }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 我的帖子操作按钮 -->
+            <div class="action-buttons" v-if="isMyPost">
+              <el-button type="warning" size="large" icon="el-icon-edit" @click="editPost">
+                编辑帖子
+              </el-button>
+              <el-button
+                      v-if="post.status === '寻找中'"
+                      type="info"
+                      size="large"
+                      icon="el-icon-check"
+                      @click="endPost"
+              >
+                标记为已结束
+              </el-button>
+              <el-button v-else type="success" size="large" icon="el-icon-refresh-left" @click="reopenPost">
+                重新开始寻找
+              </el-button>
+            </div>
+          </div>
+        </el-col>
+      </el-row>
+    </el-card>
+
+    <!-- 编辑配种帖子弹窗 -->
+    <el-dialog
+            title="编辑配种帖子"
+            :visible.sync="dialogVisible"
+            width="700px"
+            :close-on-click-modal="false"
+    >
+      <el-form :model="postForm" label-width="100px" ref="postForm">
+        <el-form-item label="标题" required>
+          <el-input v-model="postForm.title" placeholder="请输入标题" maxlength="200"></el-input>
+        </el-form-item>
+        <el-form-item label="宠物类型" required>
+          <el-radio-group v-model="postForm.petType">
+            <el-radio label="狗">狗</el-radio>
+            <el-radio label="猫">猫</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="宠物性别" required>
+          <el-radio-group v-model="postForm.petGender">
+            <el-radio label="公">公</el-radio>
+            <el-radio label="母">母</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="宠物名称" required>
+          <el-input v-model="postForm.petName" placeholder="请输入宠物名称" maxlength="50"></el-input>
+        </el-form-item>
+        <el-form-item label="品种" required>
+          <el-input v-model="postForm.breed" placeholder="请输入品种" maxlength="100"></el-input>
+        </el-form-item>
+        <el-form-item label="疫苗情况">
+          <el-input
+                  type="textarea"
+                  v-model="postForm.vaccineStatus"
+                  placeholder="请输入疫苗接种情况"
+                  :rows="3"
+                  maxlength="500"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="照片上传">
+          <el-upload
+                  action="http://localhost:18001/api/file/upload"
+                  list-type="picture-card"
+                  :file-list="fileList"
+                  :on-success="handleUploadSuccess"
+                  :on-remove="handleRemove"
+                  :limit="5"
+                  :on-exceed="handleExceed"
+          >
+            <i class="el-icon-plus"></i>
+            <div slot="tip" class="el-upload__tip">最多上传5张图片，每张不超过5MB</div>
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="配种要求">
+          <el-input
+                  type="textarea"
+                  v-model="postForm.breedingRequirement"
+                  placeholder="请输入配种要求"
+                  :rows="4"
+                  maxlength="1000"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="地理位置">
+          <el-input
+                  v-model="postForm.location"
+                  placeholder="请输入地理位置"
+                  maxlength="200"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="主人信息">
+          <el-input
+                  type="textarea"
+                  v-model="postForm.ownerInfo"
+                  placeholder="请输入主人联系方式等信息"
+                  :rows="3"
+                  maxlength="500"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-radio-group v-model="postForm.status">
+            <el-radio label="寻找中">寻找中</el-radio>
+            <el-radio label="已结束">已结束</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="描述">
+          <el-input
+                  type="textarea"
+                  v-model="postForm.description"
+                  placeholder="请输入详细描述"
+                  :rows="5"
+                  maxlength="2000"
+          ></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitPost">确定</el-button>
+      </div>
+    </el-dialog>
+  </div>
+</div>
+
+<script>
+
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+        systemName: '伴侣宠物之家',
+        userInfo: JSON.parse(localStorage.getItem('userInfo')) || null,
+        token: localStorage.getItem('authToken') || '',
+        dropdownVisible: false,
+        defaultAvatar: 'https://img1.baidu.com/it/u=2531584226,2194794184&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500',
+
+        post: null,
+        loading: false,
+        imageList: [],
+        mainImage: '',
+        // 放大镜
+        showMagnifier: false,
+        magnifierX: 0,
+        magnifierY: 0,
+        imageX: 0,
+        imageY: 0,
+        // 编辑弹窗
+        dialogVisible: false,
+        postForm: {
+          id: null,
+          title: '',
+          description: '',
+          petType: '狗',
+          petGender: '公',
+          petName: '',
+          breed: '',
+          vaccineStatus: '',
+          photos: '',
+          breedingRequirement: '',
+          location: '',
+          ownerInfo: '',
+          status: '寻找中'
+        },
+        fileList: [],
+        uploadedImages: [],
+
+      };
+    },
+    computed: {
+      magnifierStyle() {
+        return {
+          left: this.magnifierX + 'px',
+          top: this.magnifierY + 'px'
+        };
+      },
+      magnifiedStyle() {
+        return {
+          backgroundImage: `url(${this.mainImage})`,
+          backgroundPosition: `${this.imageX}% ${this.imageY}%`,
+          backgroundSize: '250%'
+        };
+      },
+      isMyPost() {
+        if (!this.post) return false;
+        const userInfo = JSON.parse(localStorage.getItem('userInfo')) || mockUserInfo;
+        return userInfo && userInfo.id === this.post.userId;
+      }
+    },
+    created() {
+      this.loadPostDetail();
+    },
+    methods: {
+      // 加载帖子详情
+      loadPostDetail() {
+        this.loading = true;
+        setTimeout(async() => {
+           //
+        }, 500);
+      },
+      // 初始化图片列表
+      initImages() {
+        if (this.post.photos) {
+          this.imageList = this.post.photos.split(',').filter(img => img.trim());
+        }
+        if (this.imageList.length === 0) {
+          this.imageList = ['https://img1.baidu.com/it/u=2531584226,2194794184&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500'];
+        }
+        this.mainImage = this.imageList[0];
+      },
+      // 选择图片
+      selectImage(image) {
+        this.mainImage = image;
+      },
+      // 处理鼠标移动事件
+      handleMouseMove(event) {
+        const container = event.currentTarget;
+        const rect = container.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        const magnifierSize = 150;
+        this.magnifierX = Math.max(0, Math.min(x - magnifierSize / 2, rect.width - magnifierSize));
+        this.magnifierY = Math.max(0, Math.min(y - magnifierSize / 2, rect.height - magnifierSize));
+        const percentX = (x / rect.width) * 100;
+        const percentY = (y / rect.height) * 100;
+        this.imageX = percentX;
+        this.imageY = percentY;
+        this.showMagnifier = true;
+      },
+      // 处理鼠标离开事件
+      handleMouseLeave() {
+        this.showMagnifier = false;
+      },
+      // 返回上一页
+      goBack() {
+        window.history.back();
+      },
+      // 编辑帖子
+      editPost() {
+        this.postForm = {
+          id: this.post.id,
+          title: this.post.title,
+          description: this.post.description || '',
+          petType: this.post.petType,
+          petGender: this.post.petGender,
+          petName: this.post.petName,
+          breed: this.post.breed,
+          vaccineStatus: this.post.vaccineStatus || '',
+          photos: this.post.photos || '',
+          breedingRequirement: this.post.breedingRequirement || '',
+          location: this.post.location || '',
+          ownerInfo: this.post.ownerInfo || '',
+          status: this.post.status
+        };
+        this.fileList = [];
+        this.uploadedImages = [];
+        if (this.post.photos) {
+          const images = this.post.photos.split(',');
+          images.forEach((url, index) => {
+            this.fileList.push({ name: `image-${index}`, url });
+            this.uploadedImages.push(url);
+          });
+        }
+        this.dialogVisible = true;
+      },
+      // 标记为已结束
+      async endPost() {
+        this.$confirm('确定要标记为“已结束”吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.post.status = '已结束';
+          this.$message.success('已标记为已结束');
+        });
+      },
+      // 重新开始寻找
+      async reopenPost() {
+        this.post.status = '寻找中';
+        this.$message.success('已重新开始寻找');
+      },
+      // 处理上传成功事件
+      handleUploadSuccess(response, file, fileList) {
+        if (response.success !== false) {
+          const url = response.data || response.url || 'https://via.placeholder.com/150';
+          this.uploadedImages.push(url);
+          this.$message.success('图片上传成功');
+        } else {
+          this.$message.error('图片上传失败');
+        }
+      },
+      // 处理删除事件
+      handleRemove(file, fileList) {
+        const index = this.uploadedImages.indexOf(file.url || file.response?.data);
+        if (index > -1) {
+          this.uploadedImages.splice(index, 1);
+        }
+      },
+      // 处理超出最大数量事件
+      handleExceed() {
+        this.$message.warning('最多只能上传5张图片');
+      },
+      // 提交更新
+      submitPost() {
+        if (!this.postForm.title || !this.postForm.petName || !this.postForm.breed) {
+          this.$message.warning('请填写必填项');
+          return;
+        }
+        //
+      },
+
+      goTo(path) {
+        window.location.href = path;
+      },
+      goToProfile() {
+        window.location.href = '/html/user-profile.html';
+      },
+      logout() {
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem("authToken");
+        this.userInfo = null;
+        window.location.href = '/index.html';
+      },
+      toggleDropdown() {
+        this.dropdownVisible = !this.dropdownVisible;
+      }
+    }
+  });
+</script>
+
+</body>
+</html>

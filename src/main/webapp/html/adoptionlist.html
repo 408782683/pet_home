@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>宠物领养 - 伴侣宠物之家</title>
+
+  <!-- Element UI CSS -->
+  <link rel="stylesheet" href="/css/index.css">
+  <!-- Vue & Element UI JS -->
+  <script src="/js/vue.min.js"></script>
+  <script src="/js/index.js"></script>
+
+  <link rel="stylesheet" href="/css/adoptionlist.css">
+</head>
+<body>
+
+<div id="app">
+  <!-- 顶部导航栏 -->
+  <div class="top-navbar">
+    <div class="navbar-content">
+      <div class="logo">
+        <span class="pet-icon">🐾</span>
+        <span class="logo-text">{{ systemName }}</span>
+      </div>
+
+      <div class="nav-menu">
+        <div class="nav-item" @click="goTo('/html/userhome.html')">
+          <i class="el-icon-s-home"></i>
+          <span>首页</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/productlist.html')">
+          <i class="el-icon-shopping-bag-2"></i>
+          <span>商品一览</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/insurancelist.html')">
+          <i class="el-icon-s-home"></i>
+          <span>宠物保险</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/policylist.html')">
+          <i class="el-icon-document-checked"></i>
+          <span>我的保单</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/claimlist.html')">
+          <i class="el-icon-warning-outline"></i>
+          <span>申保记录</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/hospitallist.html')">
+          <i class="el-icon-office-building"></i>
+          <span>宠物医院</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/appointmentlist.html')">
+          <i class="el-icon-s-order"></i>
+          <span>预约记录</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/breedinglist.html')">
+          <i class="el-icon-search"></i>
+          <span>寻找配种</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/fosterlist.html')">
+          <i class="el-icon-house"></i>
+          <span>宠物寄养</span>
+        </div>
+        <div class="nav-item active" @click="goTo('/html/adoptionlist.html')">
+          <i class="el-icon-present"></i>
+          <span>宠物领养</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/forumlist.html')">
+          <i class="el-icon-chat-dot-square"></i>
+          <span>论坛</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/usercart.html')">
+          <i class="el-icon-shopping-cart-2"></i>
+          <span>购物车</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/orderlist.html')">
+          <i class="el-icon-s-order"></i>
+          <span>我的订单</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/reviewlist.html')">
+          <i class="el-icon-chat-line-square"></i>
+          <span>我的评价</span>
+        </div>
+      </div>
+
+      <div class="user-info" v-if="userInfo" @click="toggleDropdown">
+        <img :src="userInfo.avatar || defaultAvatar" class="user-avatar" />
+        <span class="username">{{ userInfo.nickname }}</span>
+        <i class="el-icon-arrow-down"></i>
+
+        <div class="user-dropdown" :class="{ show: dropdownVisible }">
+          <div class="dropdown-item" @click.stop="goToProfile">个人资料</div>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item" @click.stop="logout">退出登录</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 领养列表主内容 -->
+  <div class="foster-list-container">
+    <!-- 搜索筛选 -->
+    <div class="search-section">
+      <el-card shadow="hover">
+        <div class="search-form">
+          <div class="search-item">
+            <label>品种</label>
+            <el-input v-model="searchForm.breed" placeholder="请输入品种" clearable @clear="handleSearch"></el-input>
+          </div>
+          <div class="search-buttons">
+            <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
+            <el-button icon="el-icon-refresh-left" @click="handleReset">重置</el-button>
+            <el-button type="success" icon="el-icon-plus" @click="showAddDialog">发布领养帖子</el-button>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-group">
+            <label>宠物类型：</label>
+            <div class="filter-buttons">
+              <div class="filter-btn" :class="{ active: searchForm.petType === '' }" @click="filterByPetType('')">全部</div>
+              <div class="filter-btn" :class="{ active: searchForm.petType === '狗' }" @click="filterByPetType('狗')">狗</div>
+              <div class="filter-btn" :class="{ active: searchForm.petType === '猫' }" @click="filterByPetType('猫')">猫</div>
+            </div>
+          </div>
+          <div class="filter-group">
+            <label>宠物性别：</label>
+            <div class="filter-buttons">
+              <div class="filter-btn" :class="{ active: searchForm.petGender === '' }" @click="filterByGender('')">全部</div>
+              <div class="filter-btn" :class="{ active: searchForm.petGender === '公' }" @click="filterByGender('公')">公</div>
+              <div class="filter-btn" :class="{ active: searchForm.petGender === '母' }" @click="filterByGender('母')">母</div>
+            </div>
+          </div>
+          <div class="filter-group">
+            <label>发布者：</label>
+            <div class="filter-buttons">
+              <div class="filter-btn" :class="{ active: searchForm.publisher === '' }" @click="filterByPublisher('')">全部</div>
+              <div class="filter-btn" :class="{ active: searchForm.publisher === 'my' }" @click="filterByPublisher('my')">我发布的</div>
+              <div class="filter-btn" :class="{ active: searchForm.publisher === 'other' }" @click="filterByPublisher('other')">他人发布的</div>
+            </div>
+          </div>
+        </div>
+      </el-card>
+    </div>
+
+    <!-- 帖子列表 -->
+    <div class="foster-grid">
+      <el-row :gutter="20">
+        <el-col v-for="post in adoptionList" :key="post.id" :xs="24" :sm="12" :md="6" :lg="6" :xl="6">
+          <div class="foster-card" @click="viewDetail(post.id)">
+            <div class="foster-image">
+              <img :src="getFirstImage(post.photos)" :alt="post.title" />
+              <div class="foster-overlay">
+                <el-button type="primary" size="small" icon="el-icon-view">查看详情</el-button>
+              </div>
+              <div v-if="isMyPost(post.userId)" class="my-post-badge">我的发布</div>
+            </div>
+            <div class="foster-info">
+              <div class="foster-title" :title="post.title">{{ post.title }}</div>
+              <div class="foster-meta">
+                <el-tag size="small" type="success">{{ post.petType }}</el-tag>
+                <el-tag size="small" type="warning">{{ post.petGender }}</el-tag>
+                <el-tag size="small" type="info">{{ post.breed }}</el-tag>
+              </div>
+              <div class="foster-pet-name">宠物：{{ post.petName }}</div>
+              <div class="foster-location" v-if="post.location">
+                <i class="el-icon-location"></i> {{ post.location }}
+              </div>
+              <div class="foster-footer">
+                <div class="user-info-inner">
+                  <img :src="post.userAvatar || 'https://img1.baidu.com/it/u=1537776144,3012351076&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500'" class="user-avatar-inner" />
+                  <span class="user-nickname">{{ post.userNickname || '匿名用户' }}</span>
+                </div>
+                <div v-if="isMyPost(post.userId)" class="action-buttons">
+                  <el-button type="warning" size="mini" icon="el-icon-edit" @click.stop="editPost(post)">编辑</el-button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </el-col>
+      </el-row>
+      <el-empty v-if="adoptionList.length === 0" description="暂无领养帖子"></el-empty>
+    </div>
+
+    <!-- 分页 -->
+    <div class="pagination-section" v-if="total > 0">
+      <el-pagination
+              background
+              @current-change="handlePageChange"
+              :current-page="currentPage"
+              :page-size="pageSize"
+              layout="total, prev, pager, next, jumper"
+              :total="total">
+      </el-pagination>
+    </div>
+
+    <!-- 发布/编辑弹窗 -->
+    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="700px" :close-on-click-modal="false">
+      <el-form :model="adoptionForm" label-width="100px" ref="adoptionForm">
+        <el-form-item label="标题" required>
+          <el-input v-model="adoptionForm.title" placeholder="请输入标题" maxlength="200"></el-input>
+        </el-form-item>
+        <el-form-item label="宠物类型" required>
+          <el-radio-group v-model="adoptionForm.petType">
+            <el-radio label="狗">狗</el-radio>
+            <el-radio label="猫">猫</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="宠物性别" required>
+          <el-radio-group v-model="adoptionForm.petGender">
+            <el-radio label="公">公</el-radio>
+            <el-radio label="母">母</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="宠物名称" required>
+          <el-input v-model="adoptionForm.petName" placeholder="请输入宠物名称" maxlength="50"></el-input>
+        </el-form-item>
+        <el-form-item label="品种" required>
+          <el-input v-model="adoptionForm.breed" placeholder="请输入品种" maxlength="100"></el-input>
+        </el-form-item>
+        <el-form-item label="疫苗情况">
+          <el-input type="textarea" v-model="adoptionForm.vaccineStatus" placeholder="请输入疫苗接种情况" :rows="3" maxlength="500"></el-input>
+        </el-form-item>
+        <el-form-item label="照片上传">
+          <el-upload
+                  action="http://localhost:18001/api/file/upload"
+                  list-type="picture-card"
+                  :file-list="fileList"
+                  :on-success="handleUploadSuccess"
+                  :on-remove="handleRemove"
+                  :limit="5"
+                  :on-exceed="handleExceed">
+            <i class="el-icon-plus"></i>
+            <div slot="tip" class="el-upload__tip">最多上传5张图片，每张不超过5MB</div>
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="领养要求">
+          <el-input type="textarea" v-model="adoptionForm.fosterRequirement" placeholder="请输入领养要求" :rows="4" maxlength="1000"></el-input>
+        </el-form-item>
+        <el-form-item label="地理位置">
+          <el-input v-model="adoptionForm.location" placeholder="请输入地理位置" maxlength="200"></el-input>
+        </el-form-item>
+        <el-form-item label="主人信息">
+          <el-input type="textarea" v-model="adoptionForm.ownerInfo" placeholder="请输入联系方式等信息" :rows="3" maxlength="500"></el-input>
+        </el-form-item>
+        <el-form-item label="状态" v-if="isEdit">
+          <el-radio-group v-model="adoptionForm.status">
+            <el-radio label="领养中">领养中</el-radio>
+            <el-radio label="已结束">已结束</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="描述">
+          <el-input type="textarea" v-model="adoptionForm.description" placeholder="请输入详细描述" :rows="5" maxlength="2000"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitPost">确定</el-button>
+      </div>
+    </el-dialog>
+  </div>
+</div>
+
+<script>
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+        systemName: '伴侣宠物之家',
+        userInfo: JSON.parse(localStorage.getItem('userInfo')) || { nickname: '请登录', avatar: '' },
+        dropdownVisible: false,
+        token: localStorage.getItem('authToken') || '',
+        defaultAvatar: 'https://img1.baidu.com/it/u=2531584226,2194794184&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500',
+        searchForm: {
+          breed: '',
+          petType: '',
+          petGender: '',
+          publisher: ''
+        },
+        adoptionList: [],
+        currentPage: 1,
+        pageSize: 12,
+        total: 0,
+
+        dialogVisible: false,
+        dialogTitle: '发布领养帖子',
+        isEdit: false,
+        adoptionForm: {
+          id: null,
+          title: '',
+          description: '',
+          petType: '狗',
+          petGender: '公',
+          petName: '',
+          breed: '',
+          vaccineStatus: '',
+          photos: '',
+          fosterRequirement: '',
+          location: '',
+          ownerInfo: '',
+          status: '寻找中'
+        },
+        fileList: [],
+        uploadedImages: []
+      };
+    },
+    created() {
+      this.loadFosterPosts();
+    },
+    methods: {
+      // 加载数据
+      async loadFosterPosts() {
+        const params = {
+          page: this.currentPage,
+          size: this.pageSize
+        };
+
+        if (this.userInfo) {
+          params.currentUserId = this.userInfo.id;
+        }
+        if (this.searchForm.breed) params.breed = this.searchForm.breed;
+        if (this.searchForm.petType) params.petType = this.searchForm.petType;
+        if (this.searchForm.petGender) params.petGender = this.searchForm.petGender;
+        if (this.searchForm.publisher) params.publisher = this.searchForm.publisher;
+
+        try {
+          const res = await fetch(`/api/adoption/listByPage`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${this.token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(params)
+          });
+          const data = await res.json();
+          if (data.success) {
+            this.adoptionList = data.data.adoptionList || [];
+            this.total = data.data.total || 0;
+          } else {
+            this.$message.error(data.message || '加载失败');
+          }
+        } catch (err) {
+          this.$message.error('网络错误，请稍后重试');
+        }
+      },
+      handleSearch() {
+        this.currentPage = 1;
+        this.loadFosterPosts();
+      },
+      handleReset() {
+        this.searchForm = { breed: '', petType: '', petGender: '', publisher: '' };
+        this.handleSearch();
+      },
+      filterByPetType(type) {
+        this.searchForm.petType = type;
+        this.handleSearch();
+      },
+      filterByGender(gender) {
+        this.searchForm.petGender = gender;
+        this.handleSearch();
+      },
+      filterByPublisher(publisher) {
+        this.searchForm.publisher = publisher;
+        this.handleSearch();
+      },
+      handlePageChange(page) {
+        this.currentPage = page;
+        this.loadFosterPosts();
+      },
+      getFirstImage(photos) {
+        if (!photos) return 'https://img1.baidu.com/it/u=2531584226,2194794184&fm=253&fmt=auto&w=500&h=500';
+        const arr = photos.split(',');
+        return arr[0] || 'https://img1.baidu.com/it/u=2531584226,2194794184&fm=253&fmt=auto&w=500&h=500';
+      },
+      isMyPost(userId) {
+        return this.userInfo && this.userInfo.id === userId;
+      },
+      viewDetail(id) {
+        alert('查看领养详情 ID: ' + id);
+      },
+      showAddDialog() {
+        if (!this.userInfo.id) {
+          this.$notify.warning({ title: '提示', message: '请先登录', duration: 2000 });
+          return;
+        }
+        this.isEdit = false;
+        this.dialogTitle = '发布领养帖子';
+        this.resetForm();
+        this.dialogVisible = true;
+      },
+      editPost(post) {
+        this.isEdit = true;
+        this.dialogTitle = '编辑领养帖子';
+        this.adoptionForm = { ...post };
+        this.uploadedImages = post.photos ? post.photos.split(',') : [];
+        this.fileList = this.uploadedImages.map((url, i) => ({ name: `img-${i}`, url }));
+        this.dialogVisible = true;
+      },
+      resetForm() {
+        this.adoptionForm = {
+          id: null,
+          title: '',
+          description: '',
+          petType: '狗',
+          petGender: '公',
+          petName: '',
+          breed: '',
+          vaccineStatus: '',
+          photos: '',
+          fosterRequirement: '',
+          location: '',
+          ownerInfo: '',
+          status: '领养中'
+        };
+        this.fileList = [];
+        this.uploadedImages = [];
+      },
+      handleUploadSuccess(response, file) {
+        if (response.success) {
+          this.uploadedImages.push(response.data);
+          this.$notify.success('图片上传成功');
+        }
+      },
+      handleRemove(file) {
+        const url = file.url || file.response?.data;
+        const index = this.uploadedImages.indexOf(url);
+        if (index > -1) this.uploadedImages.splice(index, 1);
+      },
+      handleExceed() {
+        this.$notify.warning('最多只能上传5张图片');
+      },
+      submitPost() {
+        if (!this.adoptionForm.title || !this.adoptionForm.petName || !this.adoptionForm.breed) {
+          this.$notify.warning('请填写必填项');
+          return;
+        }
+        this.$notify.success(this.isEdit ? '更新成功' : '发布成功');
+        this.dialogVisible = false;
+        this.loadFosterPosts();
+      },
+      goTo(path) {
+        window.location.href = path;
+      },
+      goToProfile() {
+        window.location.href = '/html/user-profile.html';
+      },
+      logout() {
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem("authToken");
+        this.userInfo = null;
+        window.location.href = '/index.html';
+      },
+
+      toggleDropdown() {
+        this.dropdownVisible = !this.dropdownVisible;
+      }
+    }
+  });
+</script>
+
+</body>
+</html>

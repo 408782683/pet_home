@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>商品详情 - 伴侣宠物之家</title>
+  <!-- Element UI CSS -->
+  <link rel="stylesheet" href="/css/index.css">
+  <!-- Vue CDN -->
+  <script src="/js/vue.min.js"></script>
+  <!-- Element UI JS -->
+  <script src="/js/index.js"></script>
+  <!--引入检查登录状态-->
+  <script src="/js/check.js"></script>
+
+  <link rel="stylesheet" href="/css/product.css">
+</head>
+<body>
+<div id="app">
+  <!-- 顶部导航栏 -->
+  <div class="top-navbar">
+    <div class="navbar-content">
+      <div class="logo">
+        <span class="pet-icon">🐾</span>
+        <span class="logo-text">{{ systemName }}</span>
+      </div>
+
+      <!-- 导航菜单 -->
+      <div class="nav-menu">
+        <div class="nav-item" :class="{ active: currentPath === '/user/home' }" @click="goTo('/html/userhome.html')">
+          <i class="el-icon-s-home"></i>
+          <span>首页</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath.startsWith('/user/product') }"
+             @click="goTo('/html/productlist.html')">
+          <i class="el-icon-shopping-bag-2"></i>
+          <span>商品一览</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath === '/user/insurance-list' }"
+             @click="goTo('/html/insurancelist.html')">
+          <i class="el-icon-s-home"></i>
+          <span>宠物保险</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath === '/user/policy-list' }"
+             @click="goTo('/html/policylist.html')">
+          <i class="el-icon-document-checked"></i>
+          <span>我的保单</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath === '/user/claim-list' }"
+             @click="goTo('/html/claimlist.html')">
+          <i class="el-icon-warning-outline"></i>
+          <span>申保记录</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath.startsWith('/user/hospital') }"
+             @click="goTo('/html/hospitallist.html')">
+          <i class="el-icon-office-building"></i>
+          <span>宠物医院</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath === '/user/appointment-list' }"
+             @click="goTo('/html/appointmentlist.html')">
+          <i class="el-icon-s-order"></i>
+          <span>预约记录</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath.startsWith('/user/breeding') }"
+             @click="goTo('/html/breedinglist.html')">
+          <i class="el-icon-search"></i>
+          <span>寻找配种</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath.startsWith('/user/foster') }"
+             @click="goTo('/html/fosterlist.html')">
+          <i class="el-icon-house"></i>
+          <span>宠物寄养</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath.startsWith('/user/adoption') }"
+             @click="goTo('/html/adoptionlist.html')">
+          <i class="el-icon-present"></i>
+          <span>宠物领养</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath.startsWith('/user/forum') }"
+             @click="goTo('/html/forumlist.html')">
+          <i class="el-icon-chat-dot-square"></i>
+          <span>论坛</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath === '/user/cart' }"
+             @click="goTo('/html/usercart.html')">
+          <i class="el-icon-shopping-cart-2"></i>
+          <span>购物车</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath === '/user/order-list' }"
+             @click="goTo('/html/orderlist.html')">
+          <i class="el-icon-s-order"></i>
+          <span>我的订单</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath === '/user/review-list' }"
+             @click="goTo('/html/reviewlist.html')">
+          <i class="el-icon-chat-line-square"></i>
+          <span>我的评价</span>
+        </div>
+      </div>
+
+      <!-- 用户信息 -->
+      <div class="user-info" v-if="userInfo" @click="toggleDropdown">
+        <img :src="userInfo.avatar || defaultAvatar" class="user-avatar">
+        <span class="username">{{ userInfo.nickname }}</span>
+        <i class="el-icon-arrow-down"></i>
+
+        <!-- 下拉菜单 -->
+        <div class="user-dropdown" :class="{ show: dropdownVisible }">
+          <div class="dropdown-item" @click.stop="goToProfile">个人资料</div>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item" @click.stop="logout">退出登录</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 商品列表内容 -->
+  <div class="product-list-container">
+    <!-- 搜索筛选区域 -->
+    <div class="search-section">
+      <div class="search-form">
+        <!-- 商品名称 -->
+        <div class="search-item">
+          <label>商品名称</label>
+          <input v-model="searchForm.name" type="text" placeholder="请输入商品名称" />
+        </div>
+        <!-- 品牌 -->
+        <div class="search-item">
+          <label>品牌</label>
+          <input v-model="searchForm.brand" type="text" placeholder="请输入品牌" />
+        </div>
+        <!-- 价格范围 -->
+        <div class="search-item">
+          <label>价格范围</label>
+          <div class="price-range">
+            <input v-model.number="searchForm.minPrice" type="number" placeholder="最低价" />
+            <span>-</span>
+            <input v-model.number="searchForm.maxPrice" type="number" placeholder="最高价" />
+          </div>
+        </div>
+        <!-- 操作按钮 -->
+        <div class="search-buttons">
+          <button class="btn-primary" @click="handleSearch">搜索</button>
+          <button class="btn-default" @click="handleReset">重置</button>
+        </div>
+      </div>
+
+      <!-- 筛选按钮 -->
+      <div class="filter-section">
+        <div class="filter-group">
+          <label>商品分类：</label>
+          <div class="filter-buttons">
+            <div class="filter-btn" :class="{ active: searchForm.categoryId === '' }" @click="filterByCategory('')">全部</div>
+            <div v-for="category in categories" :key="category.id" class="filter-btn" :class="{ active: searchForm.categoryId === category.id }" @click="filterByCategory(category.id)">
+              {{ category.name }}
+            </div>
+          </div>
+        </div>
+        <div class="filter-group">
+          <label>宠物类型：</label>
+          <div class="filter-buttons">
+            <div class="filter-btn" :class="{ active: searchForm.petType === '' }" @click="filterByPetType('')">全部</div>
+            <div class="filter-btn" :class="{ active: searchForm.petType === '狗' }" @click="filterByPetType('狗')">狗</div>
+            <div class="filter-btn" :class="{ active: searchForm.petType === '猫' }" @click="filterByPetType('猫')">猫</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 商品展示 -->
+    <div class="product-grid">
+      <div v-for="product in productList" :key="product.id" class="product-card" @click="viewDetail(product.id)">
+        <div class="product-image">
+          <img :src="getFirstImage(product.images)" :alt="product.name" />
+        </div>
+        <div class="product-info">
+          <div class="product-name">{{ product.name }}</div>
+          <div class="product-category">{{ product.categoryName }} · {{ product.petType }}</div>
+          <div class="product-brand">品牌：{{ product.brand }}</div>
+          <div class="product-footer">
+            <div class="product-price">
+              <span class="price-symbol">¥</span>
+              <span class="price-value">{{ product.price }}</span>
+            </div>
+            <button class="add-to-cart-btn" @click.stop="addToCart(product)">加入购物车</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 分页 -->
+    <div class="pagination-section">
+      <el-pagination
+              background
+              @current-change="handlePageChange"
+              :current-page="currentPage"
+              :page-size="pageSize"
+              layout="total, prev, pager, next, jumper"
+              :total="total">
+      </el-pagination>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Vue 实例
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+        systemName: '伴侣宠物之家',
+        currentPath: '/html/productlist.html',
+        userInfo: JSON.parse(localStorage.getItem('userInfo')) || null,
+        // 获取token
+        authToken: localStorage.getItem('authToken'),
+        dropdownVisible: false,
+        defaultAvatar: 'https://img1.baidu.com/it/u=2531584226,2194794184&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500',
+        searchForm: {
+          name: '',
+          brand: '',
+          categoryId: '',
+          petType: '',
+          minPrice: null,
+          maxPrice: null
+        },
+        productList: [],
+        categories: [],
+        currentPage: 1,
+        pageSize: 6,
+        total: 0,
+        loading: false
+      };
+    },
+
+    created() {
+      this.loadCategories();//加载所有商品分类
+      this.loadProducts();//加载所有商品数据--分页展示
+    },
+    methods: {
+      async loadCategories() {
+        try {
+          const url = "http://localhost:18001/api/category/getCategoryList"
+          const response = await fetch(url,{
+            method:"POST",
+            headers:{
+              "content-type":"application/json",
+              "Authorization": this.authToken
+            }
+          })
+          const data = await response.json();
+          if(data.success){
+            this.categories = data.data.categoryList;
+          }
+        }catch (err){
+          this.$message.error(err.message)
+        }
+      },
+
+      async loadProducts() {
+        this.loading = true;
+        try {
+          const params = { page: this.currentPage, size: this.pageSize };
+          if (this.searchForm.name) params.name = this.searchForm.name;
+          if (this.searchForm.brand) params.brand = this.searchForm.brand;
+          if (this.searchForm.categoryId) params.categoryId = this.searchForm.categoryId;
+          if (this.searchForm.petType) params.petType = this.searchForm.petType;
+          if (this.searchForm.minPrice !== null && this.searchForm.minPrice > 0) params.minPrice = this.searchForm.minPrice;
+          if (this.searchForm.maxPrice !== null && this.searchForm.maxPrice > 0) params.maxPrice = this.searchForm.maxPrice;
+          // 往后端发起请求分页加载商品数据
+          const url = "http://localhost:18001/api/product/productListByPage"
+          const response = await fetch(url,{
+            method:"POST",
+            headers:{
+              "content-type":"application/json",
+              "Authorization":this.authToken
+            },
+            body:JSON.stringify(params)
+          })
+          const data = await response.json();
+          if(data.success){
+            this.productList = data.data.productList;
+            this.total = data.data.total;
+          }
+        } catch (error) {
+          console.error('加载商品失败:', error);
+        } finally {
+          this.loading = false;
+        }
+      },
+
+      handleSearch() {
+        this.currentPage = 1;
+        this.loadProducts();
+      },
+
+      handleReset() {
+        this.searchForm = {
+          name: '',
+          brand: '',
+          categoryId: '',
+          petType: '',
+          minPrice: null,
+          maxPrice: null
+        };
+        this.handleSearch();
+      },
+
+      filterByCategory(categoryId) {
+        this.searchForm.categoryId = categoryId;
+        this.handleSearch();
+      },
+
+      filterByPetType(petType) {
+        this.searchForm.petType = petType;
+        this.handleSearch();
+      },
+
+      handlePageChange(page) {
+        this.currentPage = page;
+        this.loadProducts();
+      },
+
+      getFirstImage(images) {
+        if (!images) return 'https://img1.baidu.com/it/u=2531584226,2194794184&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500';
+        const imageArray = images.split(',');
+        return imageArray[0] || 'https://img1.baidu.com/it/u=2531584226,2194794184&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500';
+      },
+
+      viewDetail(id) {
+        window.location.href = `/html/product-detail.html?id=${id}`;
+      },
+
+//添加购物车
+      async addToCart(product) {
+        const params = {
+          productId:product.id,
+          userId:this.userInfo.id,
+          quantity:1 //默认添加一件商品
+        }
+        try {
+          const url = "http://localhost:18001/api/cart/addToCart";
+          const response = await fetch(url,{
+            method:"POST",
+            headers:{
+              "content-type":"application/json",
+              "Authorization":this.authToken
+            },
+            body:JSON.stringify(params)
+          })
+          const data = await response.json();
+          if(data.success){
+            this.$message.success(data.data)
+          }
+        }catch (err){
+          this.$message.error(err.data)
+        }
+
+      },
+
+      goTo(path) {
+        window.location.href = path;
+      },
+
+      goToProfile() {
+        window.location.href = '/html/user-profile.html';
+      },
+
+      logout() {
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem("authToken");
+        this.userInfo = null;
+        window.location.href = '/index.html';
+      },
+
+      toggleDropdown() {
+        this.dropdownVisible = !this.dropdownVisible;
+      }
+    }
+  });
+</script>
+</body>
+</html>

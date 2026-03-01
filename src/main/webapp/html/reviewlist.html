@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>我的评价 - 伴侣宠物之家🐾</title>
+  <!-- 引入Element UI样式（本地资源） -->
+  <link rel="stylesheet" href="/css/index.css">
+  <!-- 引入Vue和Element UI JS（本地资源） -->
+  <script src="/js/vue.min.js"></script>
+  <script src="/js/index.js"></script>
+  <!-- 登录状态检查 -->
+  <script src="/js/check.js"></script>
+
+  <link rel="stylesheet" href="/css/reviewlist.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- 顶部导航栏 -->
+  <div class="top-navbar">
+    <div class="navbar-content">
+      <div class="logo">
+        <span class="pet-icon">🐾</span>
+        <span class="logo-text">伴侣宠物之家</span>
+      </div>
+
+      <div class="nav-menu">
+        <div class="nav-item" @click="goTo('/html/userhome.html')">
+          <i class="el-icon-s-home"></i>
+          <span>首页</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/productlist.html')">
+          <i class="el-icon-shopping-bag-2"></i>
+          <span>商品一览</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/insurancelist.html')">
+          <i class="el-icon-shield"></i>
+          <span>宠物保险</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/policylist.html')">
+          <i class="el-icon-document-checked"></i>
+          <span>我的保单</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/claimlist.html')">
+          <i class="el-icon-warning-outline"></i>
+          <span>申保记录</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/hospitallist.html')">
+          <i class="el-icon-office-building"></i>
+          <span>宠物医院</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/appointmentlist.html')">
+          <i class="el-icon-s-order"></i>
+          <span>预约记录</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/breedinglist.html')">
+          <i class="el-icon-search"></i>
+          <span>寻找配种</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/fosterlist.html')">
+          <i class="el-icon-house"></i>
+          <span>宠物寄养</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/adoptionlist.html')">
+          <i class="el-icon-present"></i>
+          <span>宠物领养</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/forumlist.html')">
+          <i class="el-icon-chat-dot-square"></i>
+          <span>论坛</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/usercart.html')">
+          <i class="el-icon-shopping-cart-2"></i>
+          <span>购物车</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/orderlist.html')">
+          <i class="el-icon-s-order"></i>
+          <span>我的订单</span>
+        </div>
+        <div class="nav-item active" @click="goTo('/html/reviewlist.html')">
+          <i class="el-icon-chat-line-square"></i>
+          <span>我的评价</span>
+        </div>
+      </div>
+
+      <div class="user-info" v-if="userInfo" @click="toggleDropdown">
+        <img :src="userInfo.avatar || defaultAvatar" class="user-avatar"/>
+        <span class="username">{{ userInfo.nickname }}</span>
+        <i class="el-icon-arrow-down"></i>
+
+        <!-- 用户下拉菜单 -->
+        <div class="user-dropdown" :class="{ show: dropdownVisible }">
+          <div class="dropdown-item" @click.stop="goToProfile">个人资料</div>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item" @click.stop="logout">退出登录</div>
+        </div>
+      </div>
+
+      <div class="user-info" v-else>
+        <el-button type="text" style="color: white" @click="goToLogin">登录</el-button>
+      </div>
+    </div>
+  </div>
+
+  <div class="review-list-container">
+    <el-card shadow="hover">
+      <div slot="header" class="card-header">
+        <span class="header-title">
+          <i class="el-icon-chat-line-square"></i> 我的评价
+        </span>
+      </div>
+
+      <!-- 评价列表 -->
+      <div class="review-list">
+        <div v-for="review in reviewList" :key="review.id" class="review-card">
+          <!-- 商品信息 -->
+          <div class="product-section">
+            <img :src="review.productImage" :alt="review.productName" class="product-image" />
+            <div class="product-info">
+              <div class="product-name" @click="goToProductDetail(review.productId)">
+                {{ review.productName }}
+              </div>
+              <div class="order-info">
+                <span>订单编号：{{ review.orderNo }}</span>
+                <span class="create-time">{{ formatDate(review.createTime) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 评价内容 -->
+          <div class="review-content-section">
+            <div class="rating-display">
+              <el-rate v-model="review.rating" disabled show-score text-color="#ff9900"></el-rate>
+            </div>
+            <div class="review-text">{{ review.content }}</div>
+          </div>
+
+          <!-- 操作按钮 -->
+          <div class="action-buttons">
+            <el-button type="primary" size="small" plain @click="handleEditReview(review)">
+              修改评价
+            </el-button>
+            <el-button type="danger" size="small" plain @click="handleDeleteReview(review.id)">
+              删除评价
+            </el-button>
+          </div>
+        </div>
+
+        <!-- 空状态 -->
+        <el-empty v-if="reviewList.length === 0" description="暂无评价">
+          <el-button type="primary" @click="goToOrderList">去看看我的订单</el-button>
+        </el-empty>
+      </div>
+
+      <!-- 分页 -->
+      <div class="pagination-container" v-if="total > 0">
+        <el-pagination
+                background
+                layout="total, prev, pager, next, sizes"
+                :current-page="currentPage"
+                :page-size="pageSize"
+                :page-sizes="[10, 20, 30, 50]"
+                :total="total"
+                @current-change="handlePageChange"
+                @size-change="handleSizeChange"
+        >
+        </el-pagination>
+      </div>
+    </el-card>
+  </div>
+
+  <!-- 修改评价弹窗 -->
+  <el-dialog
+          title="修改评价"
+          :visible.sync="editDialogVisible"
+          width="600px"
+          @close="resetEditForm"
+  >
+    <el-form :model="editForm" :rules="editRules" ref="editForm" label-width="80px">
+      <el-form-item label="商品名称">
+        <div class="product-name-display">{{ editForm.productName }}</div>
+      </el-form-item>
+      <el-form-item label="评分" prop="rating">
+        <el-rate
+                v-model="editForm.rating"
+                show-text
+                :texts="['极差', '失望', '一般', '满意', '惊喜']"
+        ></el-rate>
+      </el-form-item>
+      <el-form-item label="评价内容" prop="content">
+        <el-input
+                type="textarea"
+                v-model="editForm.content"
+                :rows="6"
+                placeholder="请输入您的评价内容，分享您的使用感受..."
+                maxlength="500"
+                show-word-limit
+        ></el-input>
+      </el-form-item>
+    </el-form>
+    <span slot="footer" class="dialog-footer">
+      <el-button @click="editDialogVisible = false">取消</el-button>
+      <el-button type="primary" @click="submitEditReview">提交修改</el-button>
+    </span>
+  </el-dialog>
+</div>
+
+
+<script>
+
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+        // 导航栏相关
+        userInfo: JSON.parse(localStorage.getItem('userInfo')) || null,
+        token: localStorage.getItem('authToken') || '',
+        dropdownVisible: false,
+        defaultAvatar: "https://q6.itc.cn/q_70/images03/20250306/355fba6a5cb049f5b98c2ed9f03cc5e1.jpeg",
+        reviewList: [],
+        currentPage: 1,
+        pageSize: 10,
+        total: 0,
+        loading: false,
+        editDialogVisible: false,
+        editForm: {
+          reviewId: null,
+          productName: '',
+          rating: 5,
+          content: ''
+        },
+        editRules: {
+          rating: [{ required: true, message: '请选择评分', trigger: 'change' }],
+          content: [
+            { required: true, message: '请输入评价内容', trigger: 'blur' },
+            { min: 5, max: 500, message: '长度在 5 到 500 字符', trigger: 'blur' }
+          ]
+        }
+      };
+    },
+    created() {
+      this.loadReviewList();
+    },
+    methods: {
+      // 加载评价列表
+      async loadReviewList() {
+        this.loading = true;
+        try {
+          const params = {
+            userId: this.userInfo.id,
+            page: this.currentPage,
+            size: this.pageSize
+          };
+          const response = await fetch('/api/review/findReviewList', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${this.token}`
+            },
+            body: JSON.stringify(params)
+          });
+          const data = await response.json();
+          if (data.success) {
+            // 修复：初始化每个商品的checked属性（默认未选中）
+            this.reviewList = data.data.reviewList || [];
+            this.total = this.reviewList.length;
+          } else {
+            this.$message.error(data.message || '加载失败');
+          }
+        } catch (error) {
+          this.$notify({
+            title: '错误',
+            message: '加载购物车失败，请稍后重试',
+            type: 'error',
+            duration: 2000
+          });
+        } finally {
+          this.loading = false;
+        }
+      },
+
+      // 格式化日期
+      formatDate(dateStr) {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}`;
+      },
+
+      // 打开修改弹窗
+      handleEditReview(review) {
+        this.editForm.reviewId = review.id;
+        this.editForm.productName = review.productName;
+        this.editForm.rating = review.rating;
+        this.editForm.content = review.content;
+        this.editDialogVisible = true;
+      },
+
+      // 提交修改
+      submitEditReview() {
+        this.$refs.editForm.validate(valid => {
+          if (valid) {
+            // 模拟更新
+            const index = this.reviewList.findIndex(r => r.id === this.editForm.reviewId);
+            if (index !== -1) {
+              this.reviewList[index].rating = this.editForm.rating;
+              this.reviewList[index].content = this.editForm.content;
+            }
+            this.$message.success('评价修改成功');
+            this.editDialogVisible = false;
+          }
+        });
+      },
+
+      // 删除评价
+      handleDeleteReview(id) {
+        this.$confirm('确定要删除该评价吗？删除后将无法恢复。', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.reviewList = this.reviewList.filter(r => r.id !== id);
+          this.total = this.reviewList.length;
+          this.$message.success('评价已删除');
+        }).catch(() => {});
+      },
+
+      // 重置表单
+      resetEditForm() {
+        if (this.$refs.editForm) {
+          this.$refs.editForm.resetFields();
+        }
+        this.editForm = { reviewId: null, productName: '', rating: 5, content: '' };
+      },
+
+      // 跳转订单页
+      goToOrderList() {
+        window.location.href = '/user/order-list';
+      },
+
+      // 分页
+      handlePageChange(page) {
+        this.currentPage = page;
+        // 实际应重新请求分页数据
+      },
+      handleSizeChange(size) {
+        this.pageSize = size;
+        this.currentPage = 1;
+      },
+
+      // 跳转商品详情页
+      goToProductDetail(id) {
+        alert(`跳转商品详情: ${id}`);
+      },
+
+      // 导航栏跳转方法
+      goTo(path) {
+
+        window.location.href = path;
+      },
+      goToLogin() {
+        this.goTo('/index.html');
+      },
+      goToProfile() {
+        this.goTo('/html/user-profile.html');
+        this.dropdownVisible = false;
+      },
+      logout() {
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem("authToken");
+        this.userInfo = null;
+        window.location.href = '/index.html';
+      },
+      toggleDropdown() {
+        this.dropdownVisible = !this.dropdownVisible;
+      },
+    }
+  });
+</script>
+
+</body>
+</html>

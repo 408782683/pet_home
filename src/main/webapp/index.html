@@ -1,0 +1,134 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>登录 - 伴侣宠物之家</title>
+    <link rel="stylesheet" href="/css/login.css" />
+</head>
+<body>
+<div class="login-container">
+    <div class="login-background"></div>
+    <div class="login-box">
+        <div class="login-header">
+            <h2>欢迎回来</h2>
+            <p class="subtitle">请登录您的账户</p>
+        </div>
+
+        <form id="loginForm" class="login-form">
+            <div class="form-item">
+                <input type="text" id="username" name="username" placeholder="请输入用户名" required />
+            </div>
+            <div class="form-item">
+                <input type="password" id="password" name="password" placeholder="请输入密码" required />
+            </div>
+
+            <!-- 角色选择 -->
+            <div class="role-selector">
+                <div class="role-option active" data-role="普通用户">普通用户</div>
+                <div class="role-option" data-role="管理员">管理员</div>
+                <input type="hidden" id="selectedRole" name="role" value="普通用户" />
+            </div>
+
+            <!-- 验证码 -->
+            <div class="form-item captcha-container">
+                <input type="text" id="captcha" name="captcha" placeholder="请输入验证码" maxlength="4" required style="width: 60%;" />
+                <div class="captcha-image" id="captchaImage">
+                    <img id="captchaImg" src="" alt="验证码" />
+                    <div class="refresh-hint">点击刷新</div>
+                </div>
+            </div>
+
+            <button type="submit" id="loginBtn" class="login-button">登 录</button>
+
+            <div class="register-link">
+                还没有账号？<a href="/html/register.html">立即注册</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // DOM 元素
+    const form = document.getElementById('loginForm');
+    const roleOptions = document.querySelectorAll('.role-option');
+    const selectedRoleInput = document.getElementById('selectedRole');
+    const captchaImg = document.getElementById('captchaImg');
+    const loginBtn = document.getElementById('loginBtn');
+
+    // 切换角色
+    roleOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            roleOptions.forEach(opt => opt.classList.remove('active'));
+            option.classList.add('active');
+            selectedRoleInput.value = option.dataset.role;
+        });
+    });
+
+    // 刷新验证码
+    function refreshCaptcha() {
+        captchaImg.src = `http://localhost:18001/api/captcha/generate?t=${Date.now()}`;
+    }
+
+    // 登录提交
+    async function handleLogin(event) {
+        event.preventDefault();
+
+        const formData = new FormData(form);
+        const loginData = {
+            username: formData.get('username'),
+            password: formData.get('password'),
+            role: formData.get('role'),
+            captcha: formData.get('captcha')
+        };
+
+        loginBtn.disabled = true;
+        loginBtn.textContent = '登录中...';
+
+        try {
+            const response = await fetch('http://localhost:18001/api/user/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(loginData)
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                // 保存 token 和角色到 localStorage
+                localStorage.setItem('authToken', result.data.Authorization);
+                localStorage.setItem('userInfo', JSON.stringify(result.data.userInfo));
+                localStorage.setItem('userRole', result.data.role);
+
+                // 根据角色跳转不同首页（示例）
+                const redirectUrl = result.data.role === '管理员' ? 'admin.html' : '/html/userhome.html';
+                setTimeout(() => {
+                    window.location.href = redirectUrl;
+                }, 1000);
+            } else {
+                alert('登录失败：' + result.message);
+                refreshCaptcha();
+                document.getElementById('captcha').value = '';
+            }
+        } catch (error) {
+            console.error('登录请求失败:', error);
+            alert('网络错误，请稍后再试');
+            refreshCaptcha();
+            document.getElementById('captcha').value = '';
+        } finally {
+            loginBtn.disabled = false;
+            loginBtn.textContent = '登 录';
+        }
+    }
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+        refreshCaptcha();
+        form.addEventListener('submit', handleLogin);
+        document.getElementById('captchaImage').addEventListener('click', refreshCaptcha);
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,418 @@
+/* ========== 全局 ========== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa;
+}
+
+/* ========== 布局容器 ========== */
+.user-layout {
+    min-height: 100vh;
+}
+
+/* ========== 顶部导航栏 ========== */
+.top-navbar {
+    background: linear-gradient(135deg, #2c5f2d 0%, #97bc62 100%);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.navbar-content {
+    width: 100%;
+    max-width: 1400px;
+    padding: 0 30px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 auto;
+}
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    flex-shrink: 0;
+}
+.pet-icon { font-size: 28px; }
+.logo-text { font-size: 20px; font-weight: 600; }
+
+/* ========= 导航菜单 ========= */
+.nav-menu {
+    display: flex;
+    gap: 6px;
+    flex: 1;
+    justify-content: center;
+    max-width: 1200px;
+    overflow-x: hidden; /* ← 关键：禁止横向滚动 */
+    padding: 0 10px;
+    white-space: nowrap;
+}
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 12px;
+    white-space: nowrap;
+    /* 限制宽度，防止过长文本撑开 */
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.nav-item:hover,
+.nav-item.active {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.nav-item i {
+    font-size: 14px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    flex-shrink: 0;
+    position: relative;
+}
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+.username {
+    font-size: 15px;
+    font-weight: 500;
+}
+.el-icon-arrow-down {
+    font-size: 12px;
+    margin-left: 4px;
+}
+
+/* 下拉菜单 */
+.user-dropdown {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background: white;
+    border: 1px solid #e4e7ed;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    min-width: 120px;
+    display: none;
+}
+.user-dropdown.show {
+    display: block;
+}
+.dropdown-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #606266;
+}
+.dropdown-item:hover {
+    background: #f5f7fa;
+}
+.dropdown-divider {
+    height: 1px;
+    background: #e4e7ed;
+    margin: 4px 0;
+}
+
+/* ========== 主体内容 ========== */
+.main-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px;
+}
+
+/* 轮播图 */
+.carousel-section {
+    margin-bottom: 30px;
+    border-radius: 12px;
+    overflow: hidden;
+    height: 450px;
+    background: #e0e0e0 url('https://via.placeholder.com/1400x450?text=轮播图') center/cover no-repeat;
+}
+
+/* 欢迎卡片 */
+.welcome-section { margin-bottom: 30px; }
+.welcome-card {
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    background: white;
+}
+.welcome-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+}
+.welcome-icon { font-size: 60px; }
+.welcome-text h2 {
+    color: #2c5f2d;
+    font-size: 26px;
+    margin: 0 0 10px 0;
+    font-weight: 600;
+}
+.welcome-text p {
+    color: #666;
+    font-size: 16px;
+    margin: 0;
+}
+
+/* 模块区域 */
+.module-section { margin-bottom: 40px; }
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.section-title h3 {
+    color: #2c5f2d;
+    font-size: 24px;
+    margin: 0 0 5px 0;
+    font-weight: 600;
+}
+.section-title p {
+    color: #666;
+    font-size: 14px;
+    margin: 0;
+}
+.more-btn {
+    padding: 6px 12px;
+    background: #2c5f2d;
+    color: white;
+    border: 1px solid #2c5f2d;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+.more-btn:hover {
+    background: transparent;
+    color: #2c5f2d;
+}
+
+/* 卡片网格 */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+.item-card {
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    overflow: hidden;
+    height: 380px;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.item-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+.card-image {
+    width: 100%;
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+    background-color: #f5f5f5;
+}
+.card-content {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    height: calc(380px - 200px);
+}
+.card-content h4 {
+    color: #333;
+    font-size: 16px;
+    margin: 0 0 10px 0;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.description {
+    color: #666;
+    font-size: 13px;
+    line-height: 1.5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    flex: 1;
+}
+.price {
+    color: #f56c6c;
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: auto;
+}
+
+.product-meta {
+    display: flex;
+    gap: 8px;
+    margin: 10px 0;
+    flex-wrap: wrap;
+}
+.category-tag,
+.pet-type {
+    font-size: 12px;
+    color: #666;
+    background: #f0f0f0;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.pet-info {
+    color: #606266;
+    font-size: 14px;
+    margin: 10px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.tags {
+    display: flex;
+    gap: 5px;
+    margin: 10px 0;
+    flex-wrap: wrap;
+}
+.status-tag {
+    color: #2c5f2d;
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: auto;
+}
+
+.forum-stats {
+    display: flex;
+    gap: 15px;
+    color: #999;
+    font-size: 13px;
+    margin: 10px 0;
+}
+.author-info {
+    color: #999;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+/* ========== 轮播图样式 ========== */
+.carousel-section {
+    position: relative;
+    height: 450px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.carousel-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.carousel-item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 0.6s ease-in-out;
+}
+
+.carousel-item.active {
+    opacity: 1;
+}
+
+/* 指示器 */
+.carousel-indicators {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+}
+
+.carousel-indicators span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.carousel-indicators span.active {
+    background: white;
+}
+
+/* 控制按钮 */
+.carousel-control {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    transition: background 0.3s;
+}
+
+.carousel-control:hover {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.carousel-control.prev { left: 20px; }
+.carousel-control.next { right: 20px; }
+
+/* 小屏隐藏控制按钮 */
+@media (max-width: 768px) {
+    .carousel-control {
+        display: none;
+    }
+}
+
+/* 响应式 */
+@media (max-width: 1400px) {
+    .cards-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 1024px) {
+    .cards-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    .section-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+    .carousel-section { height: 300px; }
+    .navbar-content { padding: 0 15px; height: 60px; }
+    .nav-menu { display: none; } /* 移动端隐藏导航菜单 */
+}

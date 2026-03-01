@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>寻找配种 - 伴侣宠物之家</title>
+
+  <!-- 引入 Element UI 样式 -->
+  <link rel="stylesheet" href="/css/index.css">
+
+  <!-- 引入 Vue 和 Element UI JS -->
+  <script src="/js/vue.min.js"></script>
+  <script src="/js/index.js"></script>
+  <!--引入检查登录状态-->
+  <script src="/js/check.js"></script>
+
+  <link rel="stylesheet" href="/css/breedinglist.css" />
+</head>
+<body>
+<div id="app">
+  <!-- 顶部导航栏 -->
+  <div class="top-navbar">
+    <div class="navbar-content">
+      <div class="logo">
+        <span class="pet-icon">🐾</span>
+        <span class="logo-text">{{ systemName }}</span>
+      </div>
+
+      <div class="nav-menu">
+        <div class="nav-item" @click="goTo('/html/userhome.html')">
+          <i class="el-icon-s-home"></i>
+          <span>首页</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/productlist.html')">
+          <i class="el-icon-shopping-bag-2"></i>
+          <span>商品一览</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/insurancelist.html')">
+          <i class="el-icon-s-home"></i>
+          <span>宠物保险</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/policylist.html')">
+          <i class="el-icon-document-checked"></i>
+          <span>我的保单</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/claimlist.html')">
+          <i class="el-icon-warning-outline"></i>
+          <span>申保记录</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/hospitallist.html')">
+          <i class="el-icon-office-building"></i>
+          <span>宠物医院</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/appointmentlist.html')">
+          <i class="el-icon-s-order"></i>
+          <span>预约记录</span>
+        </div>
+        <div class="nav-item active">
+          <i class="el-icon-search"></i>
+          <span>寻找配种</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/fosterlist.html')">
+          <i class="el-icon-house"></i>
+          <span>宠物寄养</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/adoptionlist.html')">
+          <i class="el-icon-present"></i>
+          <span>宠物领养</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/forumlist.html')">
+          <i class="el-icon-chat-dot-square"></i>
+          <span>论坛</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/usercart.html')">
+          <i class="el-icon-shopping-cart-2"></i>
+          <span>购物车</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/orderlist.html')">
+          <i class="el-icon-s-order"></i>
+          <span>我的订单</span>
+        </div>
+        <div class="nav-item" @click="goTo('/html/reviewlist.html')">
+          <i class="el-icon-chat-line-square"></i>
+          <span>我的评价</span>
+        </div>
+      </div>
+
+      <div class="user-info" v-if="userInfo" @click="toggleDropdown">
+        <img :src="userInfo.avatar || defaultAvatar" class="user-avatar" />
+        <span class="username">{{ userInfo.nickname }}</span>
+        <i class="el-icon-arrow-down"></i>
+
+        <div class="user-dropdown" :class="{ show: dropdownVisible }">
+          <div class="dropdown-item" @click.stop="goToProfile">个人资料</div>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item" @click.stop="logout">退出登录</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 配种列表内容 -->
+  <div class="breeding-list-container">
+    <!-- 搜索筛选区域 -->
+    <div class="search-section">
+      <el-card shadow="hover">
+        <div class="search-form">
+          <!-- 品种搜索 -->
+          <div class="search-item">
+            <label>品种</label>
+            <el-input
+                    v-model="searchForm.breed"
+                    placeholder="请输入品种"
+                    clearable
+                    @clear="handleSearch">
+            </el-input>
+          </div>
+          <!-- 搜索按钮 -->
+          <div class="search-buttons">
+            <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
+            <el-button icon="el-icon-refresh-left" @click="handleReset">重置</el-button>
+            <el-button type="success" icon="el-icon-plus" @click="showAddDialog">发布配种帖子</el-button>
+          </div>
+        </div>
+
+        <!-- 筛选按钮区域 -->
+        <div class="filter-section">
+          <div class="filter-group">
+            <label>宠物类型：</label>
+            <div class="filter-buttons">
+              <div class="filter-btn" :class="{ active: searchForm.petType === '' }" @click="filterByPetType('')">全部</div>
+              <div class="filter-btn" :class="{ active: searchForm.petType === '狗' }" @click="filterByPetType('狗')">狗</div>
+              <div class="filter-btn" :class="{ active: searchForm.petType === '猫' }" @click="filterByPetType('猫')">猫</div>
+            </div>
+          </div>
+          <div class="filter-group">
+            <label>宠物性别：</label>
+            <div class="filter-buttons">
+              <div class="filter-btn" :class="{ active: searchForm.petGender === '' }" @click="filterByGender('')">全部</div>
+              <div class="filter-btn" :class="{ active: searchForm.petGender === '公' }" @click="filterByGender('公')">公</div>
+              <div class="filter-btn" :class="{ active: searchForm.petGender === '母' }" @click="filterByGender('母')">母</div>
+            </div>
+          </div>
+          <div class="filter-group">
+            <label>发布者：</label>
+            <div class="filter-buttons">
+              <div class="filter-btn" :class="{ active: searchForm.publisher === '' }" @click="filterByPublisher('')">全部</div>
+              <div class="filter-btn" :class="{ active: searchForm.publisher === 'my' }" @click="filterByPublisher('my')">我发布的</div>
+              <div class="filter-btn" :class="{ active: searchForm.publisher === 'other' }" @click="filterByPublisher('other')">他人发布的</div>
+            </div>
+          </div>
+        </div>
+      </el-card>
+    </div>
+
+    <!-- 配种帖子网格展示 -->
+    <div class="breeding-grid">
+      <el-row :gutter="20">
+        <el-col
+                v-for="post in breedingList"
+                :key="post.id"
+                :xs="24"
+                :sm="12"
+                :md="6"
+                :lg="6"
+                :xl="6">
+          <div class="breeding-card" @click="viewDetail(post.id)">
+            <div class="breeding-image">
+              <img :src="getFirstImage(post.photos)" :alt="post.title" />
+              <div class="breeding-overlay">
+                <el-button type="primary" size="small" icon="el-icon-view">查看详情</el-button>
+              </div>
+              <!-- 我的帖子标识 -->
+              <div v-if="isMyPost(post.userId)" class="my-post-badge">我的发布</div>
+            </div>
+            <div class="breeding-info">
+              <div class="breeding-title" :title="post.title">{{ post.title }}</div>
+              <div class="breeding-meta">
+                <el-tag size="small" type="success">{{ post.petType }}</el-tag>
+                <el-tag size="small" type="warning">{{ post.petGender }}</el-tag>
+                <el-tag size="small" type="info">{{ post.breed }}</el-tag>
+              </div>
+              <div class="breeding-pet-name">宠物：{{ post.petName }}</div>
+              <div class="breeding-location" v-if="post.location">
+                <i class="el-icon-location"></i> {{ post.location }}
+              </div>
+              <div class="breeding-footer">
+                <div class="user-info-inner">
+                  <img :src="post.userAvatar || defaultAvatar" :alt="post.userNickname" class="user-avatar-inner" />
+                  <span class="user-nickname">{{ post.userNickname || '匿名用户' }}</span>
+                </div>
+                <!-- 我的帖子显示操作按钮 -->
+                <div v-if="isMyPost(post.userId)" class="action-buttons">
+                  <el-button type="warning" size="mini" icon="el-icon-edit" @click.stop="editPost(post)">编辑</el-button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </el-col>
+      </el-row>
+
+      <!-- 空状态 -->
+      <el-empty v-if="breedingList.length === 0" description="暂无配种帖子"></el-empty>
+    </div>
+
+    <!-- 分页 -->
+    <div class="pagination-section" v-if="total > 0">
+      <el-pagination
+              background
+              @current-change="handlePageChange"
+              :current-page="currentPage"
+              :page-size="pageSize"
+              layout="total, prev, pager, next, jumper"
+              :total="total">
+      </el-pagination>
+    </div>
+
+    <!-- 发布/编辑配种帖子弹窗 -->
+    <el-dialog
+            :title="dialogTitle"
+            :visible.sync="dialogVisible"
+            width="700px"
+            :close-on-click-modal="false">
+      <el-form :model="postForm" label-width="100px" ref="postForm">
+        <el-form-item label="标题" required>
+          <el-input v-model="postForm.title" placeholder="请输入标题" maxlength="200"></el-input>
+        </el-form-item>
+        <el-form-item label="宠物类型" required>
+          <el-radio-group v-model="postForm.petType">
+            <el-radio label="狗">狗</el-radio>
+            <el-radio label="猫">猫</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="宠物性别" required>
+          <el-radio-group v-model="postForm.petGender">
+            <el-radio label="公">公</el-radio>
+            <el-radio label="母">母</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="宠物名称" required>
+          <el-input v-model="postForm.petName" placeholder="请输入宠物名称" maxlength="50"></el-input>
+        </el-form-item>
+        <el-form-item label="品种" required>
+          <el-input v-model="postForm.breed" placeholder="请输入品种" maxlength="100"></el-input>
+        </el-form-item>
+        <el-form-item label="疫苗情况">
+          <el-input type="textarea" v-model="postForm.vaccineStatus" placeholder="请输入疫苗接种情况" :rows="3" maxlength="500"></el-input>
+        </el-form-item>
+        <el-form-item label="照片上传">
+          <el-upload
+                  action="/api/file/upload"
+                  list-type="picture-card"
+                  :file-list="fileList"
+                  :on-success="handleUploadSuccess"
+                  :on-remove="handleRemove"
+                  :limit="5"
+                  :on-exceed="handleExceed"
+                  :headers="{ 'Authorization': 'Bearer ' + token }">
+            <i class="el-icon-plus"></i>
+            <div slot="tip" class="el-upload__tip">最多上传5张图片，每张不超过5MB</div>
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="配种要求">
+          <el-input type="textarea" v-model="postForm.breedingRequirement" placeholder="请输入配种要求" :rows="4" maxlength="1000"></el-input>
+        </el-form-item>
+        <el-form-item label="地理位置">
+          <el-input v-model="postForm.location" placeholder="请输入地理位置" maxlength="200"></el-input>
+        </el-form-item>
+        <el-form-item label="主人信息">
+          <el-input type="textarea" v-model="postForm.ownerInfo" placeholder="请输入主人联系方式等信息" :rows="3" maxlength="500"></el-input>
+        </el-form-item>
+        <el-form-item label="状态" v-if="isEdit">
+          <el-radio-group v-model="postForm.status">
+            <el-radio label="寻找中">寻找中</el-radio>
+            <el-radio label="已结束">已结束</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="描述">
+          <el-input type="textarea" v-model="postForm.description" placeholder="请输入详细描述" :rows="5" maxlength="2000"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitPost">确定</el-button>
+      </div>
+    </el-dialog>
+  </div>
+</div>
+
+<script>
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+        systemName: '伴侣宠物之家',
+        userInfo: JSON.parse(localStorage.getItem('userInfo')) || null,
+        token: localStorage.getItem('authToken') || '',
+        dropdownVisible: false,
+        defaultAvatar: 'https://img1.baidu.com/it/u=2531584226,2194794184&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500',
+
+        searchForm: {
+          breed: '',
+          petType: '',
+          petGender: '',
+          publisher: ''
+        },
+        breedingList: [],
+        currentPage: 1,
+        pageSize: 12,
+        total: 0,
+        loading: false,
+
+        // 弹窗相关
+        dialogVisible: false,
+        dialogTitle: '发布配种帖子',
+        isEdit: false,
+        postForm: {
+          id: null,
+          title: '',
+          description: '',
+          petType: '狗',
+          petGender: '公',
+          petName: '',
+          breed: '',
+          vaccineStatus: '',
+          photos: '',
+          breedingRequirement: '',
+          location: '',
+          ownerInfo: '',
+          status: '寻找中'
+        },
+        // 图片上传
+        fileList: [],
+        uploadedImages: []
+      };
+    },
+    created() {
+      this.loadBreedingPosts();
+    },
+    methods: {
+      async loadBreedingPosts() {
+        if (!this.userInfo) {
+          // 可以匿名浏览，但不能发布配种帖子
+
+        }
+
+        const params = {
+          page: this.currentPage,
+          size: this.pageSize
+        };
+
+        if (this.userInfo) {
+          params.userId = this.userInfo.id;
+        }
+        if (this.searchForm.breed) params.breed = this.searchForm.breed;
+        if (this.searchForm.petType) params.petType = this.searchForm.petType;
+        if (this.searchForm.petGender) params.petGender = this.searchForm.petGender;
+        if (this.searchForm.publisher) params.publisher = this.searchForm.publisher;
+
+        try {
+          const res = await fetch(`/api/breeding/listByPage`, {
+            method:"post",
+            headers: {
+              'Authorization': `Bearer ${this.token}` ,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(params)
+          });
+          const data = await res.json();
+          if (data.success) {
+            this.breedingList = data.data.breedingList || [];
+            this.total = data.data.total || 0;
+          } else {
+            this.$message.error(data.message || '加载失败');
+          }
+        } catch (err) {
+          this.$message.error('网络错误，请稍后重试');
+        }
+      },
+
+      handleSearch() {
+        this.currentPage = 1;
+        this.loadBreedingPosts();
+      },
+      handleReset() {
+        this.searchForm = { breed: '', petType: '', petGender: '', publisher: '' };
+        this.handleSearch();
+      },
+      filterByPetType(petType) {
+        this.searchForm.petType = petType;
+        this.handleSearch();
+      },
+      filterByGender(gender) {
+        this.searchForm.petGender = gender;
+        this.handleSearch();
+      },
+      filterByPublisher(publisher) {
+        this.searchForm.publisher = publisher;
+        this.handleSearch();
+      },
+      handlePageChange(page) {
+        this.currentPage = page;
+        this.loadBreedingPosts();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      },
+
+      getFirstImage(photos) {
+        if (!photos) {
+          return this.defaultAvatar;
+        }
+        const imageArray = photos.split(',');
+        return imageArray[0] || this.defaultAvatar;
+      },
+
+      isMyPost(userId) {
+        return this.userInfo && this.userInfo.id === userId;
+      },
+
+      viewDetail(id) {
+        window.location.href = `/html/breeding-detail.html?id=${id}`;
+      },
+
+      showAddDialog() {
+        if (!this.userInfo) {
+          this.$notify.warning({ title: '提示', message: '请先登录', duration: 2000 });
+          setTimeout(() => window.location.href = '/index.html', 1000);
+          return;
+        }
+        this.isEdit = false;
+        this.dialogTitle = '发布配种帖子';
+        this.resetForm();
+        this.dialogVisible = true;
+      },
+
+      editPost(post) {
+        this.isEdit = true;
+        this.dialogTitle = '编辑配种帖子';
+        this.postForm = {
+          id: post.id,
+          title: post.title,
+          description: post.description || '',
+          petType: post.petType,
+          petGender: post.petGender,
+          petName: post.petName,
+          breed: post.breed,
+          vaccineStatus: post.vaccineStatus || '',
+          photos: post.photos || '',
+          breedingRequirement: post.breedingRequirement || '',
+          location: post.location || '',
+          ownerInfo: post.ownerInfo || '',
+          status: post.status
+        };
+        // 初始化文件列表
+        this.fileList = [];
+        this.uploadedImages = [];
+        if (post.photos) {
+          const images = post.photos.split(',');
+          images.forEach((url, index) => {
+            this.fileList.push({ name: `image-${index}`, url });
+            this.uploadedImages.push(url);
+          });
+        }
+        this.dialogVisible = true;
+      },
+
+      resetForm() {
+        this.postForm = {
+          id: null,
+          title: '',
+          description: '',
+          petType: '狗',
+          petGender: '公',
+          petName: '',
+          breed: '',
+          vaccineStatus: '',
+          photos: '',
+          breedingRequirement: '',
+          location: '',
+          ownerInfo: '',
+          status: '寻找中'
+        };
+        this.fileList = [];
+        this.uploadedImages = [];
+      },
+
+      handleUploadSuccess(response, file, fileList) {
+        if (response.success) {
+          this.uploadedImages.push(response.data);
+          this.$notify.success({ title: '成功', message: '图片上传成功', duration: 2000 });
+        } else {
+          this.$notify.error({ title: '失败', message: response.message || '图片上传失败', duration: 2000 });
+        }
+      },
+
+      handleRemove(file, fileList) {
+        const index = this.uploadedImages.indexOf(file.url || file.response?.data);
+        if (index > -1) {
+          this.uploadedImages.splice(index, 1);
+        }
+      },
+
+      handleExceed() {
+        this.$notify.warning({ title: '提示', message: '最多只能上传5张图片', duration: 2000 });
+      },
+
+      async submitPost() {
+        if (!this.postForm.title) {
+          this.$notify.warning({ title: '提示', message: '请输入标题', duration: 2000 });
+          return;
+        }
+        if (!this.postForm.petName) {
+          this.$notify.warning({ title: '提示', message: '请输入宠物名称', duration: 2000 });
+          return;
+        }
+        if (!this.postForm.breed) {
+          this.$notify.warning({ title: '提示', message: '请输入品种', duration: 2000 });
+          return;
+        }
+
+        try {
+          const postData = {
+            ...this.postForm,
+            photos: this.uploadedImages.join(',')
+          };
+
+          if (this.isEdit) {
+            postData.currentUserId = this.userInfo.id;
+            const res = await fetch('/api/breeding/update', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.token}`
+              },
+              body: JSON.stringify(postData)
+            });
+            const data = await res.json();
+            if (data.success) {
+              this.$notify.success({ title: '成功', message: '更新成功', duration: 2000 });
+              this.dialogVisible = false;
+              this.loadBreedingPosts();
+            } else {
+              this.$notify.error({ title: '失败', message: data.message || '更新失败', duration: 2000 });
+            }
+          } else {
+            postData.userId = this.userInfo.id;
+            const res = await fetch('/api/breeding/add', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.token}`
+              },
+              body: JSON.stringify(postData)
+            });
+            const data = await res.json();
+            if (data.success) {
+              this.$notify.success({ title: '成功', message: '发布成功', duration: 2000 });
+              this.dialogVisible = false;
+              this.loadBreedingPosts();
+            } else {
+              this.$notify.error({ title: '失败', message: data.message || '发布失败', duration: 2000 });
+            }
+          }
+        } catch (error) {
+          this.$notify.error({ title: '错误', message: this.isEdit ? '更新失败，请稍后重试' : '发布失败，请稍后重试', duration: 2000 });
+        }
+      },
+
+      goTo(path) {
+        window.location.href = path;
+      },
+      goToProfile() {
+        window.location.href = '/html/user-profile.html';
+      },
+      logout() {
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem("authToken");
+        this.userInfo = null;
+        window.location.href = '/index.html';
+      },
+      toggleDropdown() {
+        this.dropdownVisible = !this.dropdownVisible;
+      }
+    }
+  });
+</script>
+</body>
+</html>
