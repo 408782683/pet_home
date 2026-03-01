@@ -5,7 +5,6 @@ import com.rain.mapper.UserMapper;
 
 import java.sql.SQLException;
 
-
 public class UserService {
 
     private UserMapper userMapper= new UserMapper();
@@ -22,4 +21,7 @@ public class UserService {
         return userMapper.loginUser(username,password,role);
     }
 
+    public int updateProfile(User user) throws SQLException {
+        return userMapper.updateProfile(user);
+    }
 }

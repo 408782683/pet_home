@@ -401,11 +401,14 @@
     },
     methods: {
       // 加载帖子详情
-      loadPostDetail() {
+      async loadPostDetail() {
         this.loading = true;
-        setTimeout(async() => {
-           //
-        }, 500);
+        const id = new URLSearchParams(window.location.search).get('id') || '1';
+        const res = await fetch('/api/breeding/detail',{method:'POST',headers:{'Content-Type':'application/json','Authorization':this.token},body:JSON.stringify({id})});
+        const data = await res.json();
+        if(data.success){ this.post = data.data || {}; this.initImages(); }
+        else{ this.$message.error(data.message||'加载失败'); }
+        this.loading = false;
       },
       // 初始化图片列表
       initImages() {

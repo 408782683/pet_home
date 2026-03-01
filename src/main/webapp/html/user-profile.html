@@ -252,7 +252,7 @@
 
       // 设置上传请求头
       setUploadHeaders() {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('authToken');
         if (token) {
           this.uploadHeaders = { Authorization: `Bearer ${token}` };
         } else {
@@ -265,21 +265,12 @@
         this.$refs.profileForm.validate((valid) => {
           if (valid) {
             this.loading = true;
-            // 模拟保存
-            setTimeout(() => {
-              // 更新本地存储
-              const updatedUser = {
-                ...this.userInfo,
-                nickname: this.form.nickname,
-                avatar: this.form.avatar,
-                phone: this.form.phone,
-                email: this.form.email
-              };
-              localStorage.setItem('userInfo', JSON.stringify(updatedUser));
-              this.userInfo = updatedUser;
-              this.loading = false;
-              this.$message.success('个人信息更新成功');
-            }, 800);
+            fetch('/api/user/updateProfile',{method:'POST',headers:{'Content-Type':'application/json','Authorization':localStorage.getItem('authToken')||''},body:JSON.stringify(this.form)}).then(r=>r.json()).then(data=>{
+              if(data.success){
+                const updatedUser = {...this.userInfo,nickname:this.form.nickname,avatar:this.form.avatar,phone:this.form.phone,email:this.form.email};
+                localStorage.setItem('userInfo', JSON.stringify(updatedUser)); this.userInfo = updatedUser; this.$message.success('个人信息更新成功');
+              }else{ this.$message.error(data.message||'更新失败'); }
+            }).finally(()=>{ this.loading=false; });
           }
         });
       },

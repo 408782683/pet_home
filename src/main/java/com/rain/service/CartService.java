@@ -11,6 +11,10 @@ public class CartService {
     private CartMapper cartMapper = new CartMapper();
     private ProductMapper productMapper = new ProductMapper();
 
+    public java.util.List<Cart> findCartList(Integer userId) throws SQLException {
+        return cartMapper.findCartList(userId);
+    }
+
     //添加购物车
     public void addToCart(Integer productId,Integer userId,Integer quantity) throws SQLException {
         boolean flag = cartMapper.idAddCart(productId, userId);

@@ -340,15 +340,13 @@
         },
         methods: {
             // 加载医院详情
-            loadHospitalDetail() {
-                // 从 URL 获取 id，例如: ?id=1
-                const urlParams = new URLSearchParams(window.location.search);
-                const hospitalId = urlParams.get('id') || '1';
-
-                // 模拟 API 延迟
-                setTimeout(async() => {
-                    //
-                }, 500);
+            async loadHospitalDetail() {
+                const hospitalId = new URLSearchParams(window.location.search).get('id') || '1';
+                this.loading = true;
+                const res = await fetch('/api/hospital/detail',{method:'POST',headers:{'Content-Type':'application/json','Authorization':this.token},body:JSON.stringify({id:hospitalId})});
+                const data = await res.json();
+                if(data.success){ this.hospital = data.data || {}; } else { this.$message.error(data.message||'加载失败'); }
+                this.loading = false;
             },
 
             goBack() {
@@ -405,7 +403,9 @@
             confirmAppointment() {
                 this.$refs.appointmentFormRef.validate(async (valid) => {
                     if (valid) {
-                        //
+                        const res = await fetch('/api/appointment/add',{method:'POST',headers:{'Content-Type':'application/json','Authorization':this.token},body:JSON.stringify({...this.appointmentForm,userId:this.userInfo.id,hospitalId:this.hospital.id,hospitalName:this.hospital.name,images:this.uploadedImages.join(',')})});
+                        const data = await res.json();
+                        if(data.success){ this.$message.success('预约成功'); this.appointmentDialogVisible=false; } else { this.$message.error(data.message||'预约失败'); }
                     }
                 });
             },
