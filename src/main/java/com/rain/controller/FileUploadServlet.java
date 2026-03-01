@@ -26,8 +26,8 @@ import java.util.UUID;
 )
 public class FileUploadServlet extends BaseServlet{
     private static final String ENDPOINT = "oss-cn-beijing.aliyuncs.com"; // 你的地域
-    private static final String ACCESS_KEY_ID = "LTAI5tDWCQ1Pj4aAsVaeJnhD";//keyid
-    private static final String ACCESS_KEY_SECRET = "7ypUCQeilqaiOLc0ykYEXurg1tiDZN";//secret
+    private static final String ACCESS_KEY_ID = "";//keyid
+    private static final String ACCESS_KEY_SECRET = "";//secret
     private static final String BUCKET_NAME = "5h1gure-bucket";//bucket的名称
 
     @Override
