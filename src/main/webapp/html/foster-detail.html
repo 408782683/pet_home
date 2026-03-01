@@ -394,10 +394,12 @@
         this.post.status = '寻找中';
         this.$message.success('已重新开始寻找');
       },
-      submitPost() {
-        Object.assign(this.post, this.postForm);
-        this.dialogVisible = false;
-        this.$message.success('更新成功');
+      async submitPost() {
+        const body = {...this.postForm, currentUserId:this.userInfo.id, photos:this.uploadedImages.join(',') || this.post.photos};
+        const res = await fetch('/api/foster/update',{method:'POST',headers:{'Content-Type':'application/json','Authorization':this.token},body:JSON.stringify(body)});
+        const data = await res.json();
+        if(data.success){ Object.assign(this.post,this.postForm); this.dialogVisible=false; this.$message.success('更新成功'); }
+        else{ this.$message.error(data.message||'更新失败'); }
       },
       goTo(path) {
         window.location.href = path;

@@ -429,14 +429,15 @@
       handleExceed() {
         this.$notify.warning('最多只能上传5张图片');
       },
-      submitPost() {
-        if (!this.adoptionForm.title || !this.adoptionForm.petName || !this.adoptionForm.breed) {
-          this.$notify.warning('请填写必填项');
-          return;
-        }
-        this.$notify.success(this.isEdit ? '更新成功' : '发布成功');
-        this.dialogVisible = false;
-        this.loadFosterPosts();
+      async submitPost() {
+        if (!this.adoptionForm.title || !this.adoptionForm.petName || !this.adoptionForm.breed) { this.$notify.warning('请填写必填项'); return; }
+        const postData = { ...this.adoptionForm, photos: this.uploadedImages.join(',') };
+        if (this.isEdit) { postData.currentUserId = this.userInfo.id; } else { postData.userId = this.userInfo.id; }
+        const url = this.isEdit ? '/api/adoption/update' : '/api/adoption/add';
+        const res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':this.token},body:JSON.stringify(postData)});
+        const data = await res.json();
+        if(data.success){ this.$notify.success(this.isEdit ? '更新成功' : '发布成功'); this.dialogVisible=false; this.loadFosterPosts(); }
+        else{ this.$notify.error(data.message||'操作失败'); }
       },
       goTo(path) {
         window.location.href = path;

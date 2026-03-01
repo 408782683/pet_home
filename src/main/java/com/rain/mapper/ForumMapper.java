@@ -231,4 +231,24 @@ public class ForumMapper {
             return rs.next();
         }
     }
+
+    public void addLike(Integer postId, Integer userId) throws SQLException {
+        String sql = "insert into forum_post_like(post_id,user_id,create_time) values(?,?,now())";
+        try(Connection conn = JdbcUtil.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, postId); pstmt.setInt(2, userId); pstmt.executeUpdate();
+        }
+        try(Connection conn = JdbcUtil.getConnection(); PreparedStatement pstmt = conn.prepareStatement("update forum_post set like_count=like_count+1 where id=?")) {
+            pstmt.setInt(1, postId); pstmt.executeUpdate();
+        }
+    }
+
+    public void cancelLike(Integer postId, Integer userId) throws SQLException {
+        String sql = "delete from forum_post_like where post_id=? and user_id=?";
+        try(Connection conn = JdbcUtil.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, postId); pstmt.setInt(2, userId); pstmt.executeUpdate();
+        }
+        try(Connection conn = JdbcUtil.getConnection(); PreparedStatement pstmt = conn.prepareStatement("update forum_post set like_count=if(like_count>0,like_count-1,0) where id=?")) {
+            pstmt.setInt(1, postId); pstmt.executeUpdate();
+        }
+    }
 }

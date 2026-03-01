@@ -366,11 +366,13 @@
                 }
             },
             // 加载保险详情
-            loadInsuranceDetail() {
+            async loadInsuranceDetail() {
                 this.loading = true;
-                setTimeout(() => {
-                    //
-                }, 500);
+                const id = new URLSearchParams(window.location.search).get('id') || '1';
+                const res = await fetch('/api/insurance/detail',{method:'POST',headers:{'Content-Type':'application/json','Authorization':this.authToken||''},body:JSON.stringify({id})});
+                const data = await res.json();
+                if(data.success){ this.insurance = data.data || {}; } else { this.$message.error(data.message||'加载失败'); }
+                this.loading = false;
             },
 
             getCoverageList(coverage) {

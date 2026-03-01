@@ -19,8 +19,26 @@ public class ReviewServlet extends BaseServlet{
         if("/findByPid".equals(pathInfo)){
             //根据商品id查询对应的评论数据
             findByPid(req,resp);
+        }else if("/findReviewList".equals(pathInfo)){
+            findReviewList(req,resp);
         }else{
             writeJson(resp,error("接口不存在!!!!"));
+        }
+    }
+
+    // 我的评价列表
+    private void findReviewList(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        JSONObject params = JSONObject.parseObject(req.getReader().readLine());
+        Integer userId = params.getIntValue("userId");
+        Integer page = params.getIntValue("page",1);
+        Integer size = params.getIntValue("size",10);
+        try {
+            java.util.List<JSONObject> list = reviewService.findReviewListByUser(userId,page,size);
+            JSONObject result = new JSONObject();
+            result.put("reviewList",list);
+            writeJson(resp,success(result));
+        } catch (SQLException e) {
+            writeJson(resp,error("系统繁忙,请稍后尝试"));
         }
     }
 

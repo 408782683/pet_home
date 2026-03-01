@@ -37,6 +37,9 @@ public class ForumServlet extends BaseServlet {
         else if(path.equals("/like/check")){
             checkPostIsLike(req,resp);
         }
+        else if(path.equals("/like")){
+            toggleLike(req,resp);
+        }
         else {
             writeJson(resp, error("接口不存在！"));
         }
@@ -133,6 +136,19 @@ public class ForumServlet extends BaseServlet {
         }
     }
 
+
+    private void toggleLike(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        JSONObject params = JSONObject.parseObject(req.getReader().readLine());
+        Integer postId = params.getInteger("postId");
+        Integer userId = params.getInteger("userId");
+        Boolean isLiked = params.getBoolean("isLiked");
+        try {
+            forumService.toggleLike(postId,userId,isLiked);
+            writeJson(resp, success("操作成功"));
+        } catch (Exception e) {
+            writeJson(resp, error("操作失败"));
+        }
+    }
 
     // 根据帖子id以及用户id检查是否点赞
     private void checkPostIsLike(HttpServletRequest req, HttpServletResponse resp) {

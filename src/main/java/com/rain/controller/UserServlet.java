@@ -45,6 +45,8 @@ public class UserServlet extends BaseServlet {
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
+        } else if ("/updateProfile".equals(pathInfo)) {
+            updateProfile(req,resp);
         } else {
             writeJson(resp, error("接口不存在！！！"));
         }
@@ -125,6 +127,22 @@ public class UserServlet extends BaseServlet {
             writeJson(resp,error("验证码有误！！！"));
         }
 
+    }
+
+    private void updateProfile(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        JSONObject params = JSONObject.parseObject(req.getReader().readLine());
+        User user = new User();
+        user.setId(params.getIntValue("id"));
+        user.setNickname(params.getString("nickname"));
+        user.setAvatar(params.getString("avatar"));
+        user.setPhone(params.getString("phone"));
+        user.setEmail(params.getString("email"));
+        try {
+            int n = userService.updateProfile(user);
+            writeJson(resp, n>0 ? success("更新成功") : error("更新失败"));
+        } catch (SQLException e) {
+            writeJson(resp,error("系统繁忙"));
+        }
     }
 
     private void isUsernameExist(HttpServletRequest req, HttpServletResponse resp) throws IOException, SQLException {

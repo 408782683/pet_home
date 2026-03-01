@@ -3,8 +3,13 @@ import com.rain.entity.Review;
 import com.rain.mapper.ReviewMapper;
 import java.sql.SQLException;
 import java.util.List;
+import com.alibaba.fastjson2.JSONObject;
 public class ReviewService {
     private ReviewMapper reviewMapper = new ReviewMapper();
+
+    public List<JSONObject> findReviewListByUser(Integer userId,Integer page,Integer size) throws SQLException {
+        return reviewMapper.findReviewListByUser(userId,page,size);
+    }
 
     //分页查询商品对应的评论数据
     public List<Review> findReviewByPid(Integer pid, Integer pageNum,Integer pageSize) throws SQLException {

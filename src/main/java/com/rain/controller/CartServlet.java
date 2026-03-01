@@ -22,9 +22,22 @@ public class CartServlet extends BaseServlet{
             addToCart(req,resp);
         }else if("/findCartList".equals(pathInfo)){
             // 根据用户id加载对应的购物车数据
-           // findCartList(req,resp);
+           findCartList(req,resp);
         }else{
             writeJson(resp,error("接口不存在!!!"));
+        }
+    }
+
+    // 根据用户id查询购物车
+    private void findCartList(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        Integer userId = Integer.parseInt(req.getParameter("userId"));
+        try {
+            java.util.List<Cart> cartList = cartService.findCartList(userId);
+            JSONObject result = new JSONObject();
+            result.put("cartItemList", cartList);
+            writeJson(resp, success(result));
+        } catch (Exception e) {
+            writeJson(resp, error("系统繁忙,请稍后尝试"));
         }
     }
 
